@@ -1,11 +1,11 @@
 // Configuracao do prototipo. So o CLIENT_ID precisa ser trocado (passo a passo em LEIA-ME.md).
-// O CLIENT_ID nao e segredo: identifica o aplicativo registrado na Microsoft.
+// O CLIENT_ID nao e segredo: identifica o aplicativo registrado no Google Cloud.
 window.APP_CONFIG = {
-  CLIENT_ID: "COLE_AQUI_O_ID_DO_APLICATIVO",
-  // Conta pessoal da Microsoft (Outlook, Hotmail, Live). Nao serve para conta de trabalho.
-  AUTHORITY: "https://login.microsoftonline.com/consumers",
-  SCOPES: ["Files.ReadWrite.AppFolder"],
-  // Arquivos que o prototipo grava na pasta do app (OneDrive > Apps > <nome do aplicativo>)
+  CLIENT_ID: "208384938083-jj7ho6o2l5rf6abs0qk3cds3qg1e2090.apps.googleusercontent.com",
+  // drive.file: o app so enxerga os arquivos que ele mesmo criou (nunca o resto do seu Drive).
+  SCOPES: "https://www.googleapis.com/auth/drive.file",
+  // Pasta criada no seu Google Drive (visivel, voce pode copiar o banco como backup)
+  PASTA: "Gestao Agricola",
   ARQUIVO_TEXTO: "teste.json",
   ARQUIVO_BANCO: "fazenda_teste.db"
 };

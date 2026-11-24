@@ -1,7 +1,7 @@
 // Service worker: deixa o app abrir sem internet (so os arquivos do proprio app; dados nunca passam por aqui).
-const VERSAO = 'proto-1';
+const VERSAO = 'proto-2';
 const ARQUIVOS = ['./', 'index.html', 'app.js', 'config.js', 'db.worker.js', 'manifest.webmanifest',
-  'lib/sqlite3.mjs', 'lib/sqlite3.wasm', 'lib/msal-browser.min.js', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
+  'lib/sqlite3.mjs', 'lib/sqlite3.wasm', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSAO).then((c) => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));

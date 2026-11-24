@@ -1,6 +1,6 @@
 // Prototipo: prova tres coisas no iPhone e no PC
-// 1) login Microsoft (conta pessoal)  2) ler/gravar arquivo na pasta do app no OneDrive
-// 3) banco SQLite local no aparelho, com envio e recebimento via OneDrive.
+// 1) login Google  2) ler/gravar arquivo numa pasta do Google Drive
+// 3) banco SQLite local no aparelho, com envio e recebimento via Drive.
 (function () {
   const cfg = window.APP_CONFIG;
   const $ = (id) => document.getElementById(id);
@@ -35,74 +35,129 @@
     } catch (e) { falha(e); }
   };
 
-  // ---------- Login Microsoft ----------
-  let msalApp = null, conta = null;
-  const redirectUri = new URL('./', location.href).href;
-  $('redirect').textContent = redirectUri;
+  // ---------- Login Google ----------
+  // O acesso dura cerca de 1 hora e fica so na memoria da tela (nao e gravado).
+  let acesso = null, validoAte = 0, cliente = null, pedidoPendente = null;
+  $('origem').textContent = location.origin;
 
-  async function iniciarLogin() {
-    if (cfg.CLIENT_ID.indexOf('COLE_AQUI') === 0) {
-      log('Falta colocar o ID do aplicativo em config.js (veja LEIA-ME.md, passo 2).', 'erro');
-      return;
-    }
-    msalApp = new msal.PublicClientApplication({
-      auth: { clientId: cfg.CLIENT_ID, authority: cfg.AUTHORITY, redirectUri },
-      cache: { cacheLocation: 'localStorage' }
+  function configurado() { return cfg.CLIENT_ID.indexOf('COLE_AQUI') !== 0; }
+
+  function conectado() { return !!acesso && Date.now() < validoAte; }
+  function atualizarConta(rotulo) {
+    $('conta').textContent = conectado() ? (rotulo || 'conectado') : 'nao entrou';
+    ['btnTextoGravar', 'btnTextoLer', 'btnBancoEnviar', 'btnBancoReceber'].forEach((id) => { $(id).disabled = !conectado(); });
+    $('btnEntrar').hidden = conectado(); $('btnSair').hidden = !conectado();
+  }
+
+  function criarCliente() {
+    if (cliente) return cliente;
+    if (typeof google === 'undefined' || !google.accounts) throw new Error('Nao consegui carregar o login do Google (sem internet?).');
+    cliente = google.accounts.oauth2.initTokenClient({
+      client_id: cfg.CLIENT_ID,
+      scope: cfg.SCOPES,
+      callback: (r) => {
+        const p = pedidoPendente; pedidoPendente = null;
+        if (r.error) { if (p) p.rej(new Error('Login recusado: ' + (r.error_description || r.error))); return; }
+        acesso = r.access_token; validoAte = Date.now() + (Number(r.expires_in) - 60) * 1000;
+        if (p) p.res();
+      },
+      error_callback: (e) => {
+        const p = pedidoPendente; pedidoPendente = null;
+        if (p) p.rej(new Error('Login nao concluido (' + (e && e.type || 'erro') + ')'));
+      }
     });
-    await msalApp.initialize();
-    const r = await msalApp.handleRedirectPromise();
-    conta = (r && r.account) || msalApp.getAllAccounts()[0] || null;
-    atualizarConta();
+    return cliente;
   }
-  function atualizarConta() {
-    $('conta').textContent = conta ? conta.username : 'nao entrou';
-    ['btnTextoGravar', 'btnTextoLer', 'btnBancoEnviar', 'btnBancoReceber'].forEach((id) => { $(id).disabled = !conta; });
-    $('btnEntrar').hidden = !!conta; $('btnSair').hidden = !conta;
+  function pedirAcesso(prompt) {
+    return new Promise((res, rej) => {
+      try { const c = criarCliente(); pedidoPendente = { res, rej }; c.requestAccessToken({ prompt: prompt }); }
+      catch (e) { rej(e); }
+    });
   }
-  $('btnEntrar').onclick = () => {
-    if (!msalApp) return log('Login indisponivel: configure o ID do aplicativo.', 'erro');
-    msalApp.loginRedirect({ scopes: cfg.SCOPES });
-  };
-  $('btnSair').onclick = () => { if (msalApp) msalApp.logoutRedirect({ account: conta, postLogoutRedirectUri: redirectUri }); };
-
   async function token() {
-    try {
-      const r = await msalApp.acquireTokenSilent({ scopes: cfg.SCOPES, account: conta });
-      return r.accessToken;
-    } catch (e) {
-      log('Sessao expirou; vou pedir o login de novo.');
-      await msalApp.acquireTokenRedirect({ scopes: cfg.SCOPES });
-      throw new Error('redirecionando para o login');
-    }
+    // Pedir login fora de um toque seria bloqueado pelo navegador (popup); por isso so avisamos.
+    if (!conectado()) { atualizarConta(); throw new Error('O acesso expirou (dura cerca de 1 hora). Toque em "Entrar com o Google" de novo.'); }
+    return acesso;
   }
 
-  // ---------- OneDrive (pasta do app) ----------
-  const base = 'https://graph.microsoft.com/v1.0/me/drive/special/approot:/';
-  async function graph(nome, opcoes, sufixo) {
+  $('btnEntrar').onclick = async () => {
+    if (!configurado()) return log('Falta colocar o ID do cliente em config.js (veja LEIA-ME.md, passo 2).', 'erro');
+    try {
+      await pedirAcesso('select_account');
+      let nome = 'conectado';
+      try {
+        const r = await fetch('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)', { headers: { Authorization: 'Bearer ' + acesso } });
+        if (r.ok) nome = (await r.json()).user.emailAddress;
+      } catch (e) { /* so o rotulo */ }
+      atualizarConta(nome); log('Entrou: ' + nome, 'ok');
+    } catch (e) { falha(e); }
+  };
+  $('btnSair').onclick = () => {
+    if (acesso && typeof google !== 'undefined') google.accounts.oauth2.revoke(acesso, () => {});
+    acesso = null; validoAte = 0; atualizarConta(); log('Saiu (acesso revogado).');
+  };
+
+  // ---------- Google Drive (pasta do app) ----------
+  const API = 'https://www.googleapis.com/drive/v3/files';
+  const UP = 'https://www.googleapis.com/upload/drive/v3/files';
+  let pastaId = null;
+
+  async function drive(url, opcoes) {
     const t = await token();
-    const r = await fetch(base + encodeURIComponent(nome) + (sufixo || ''), Object.assign({}, opcoes, {
+    const r = await fetch(url, Object.assign({}, opcoes, {
       headers: Object.assign({ Authorization: 'Bearer ' + t }, (opcoes && opcoes.headers) || {})
     }));
     if (!r.ok) {
       let det = ''; try { det = (await r.json()).error.message; } catch (e) { /* sem corpo */ }
-      throw new Error('OneDrive respondeu ' + r.status + (det ? ': ' + det : ''));
+      throw new Error('Drive respondeu ' + r.status + (det ? ': ' + det : ''));
     }
     return r;
   }
-  const enviar = (nome, corpo) => graph(nome, { method: 'PUT', headers: { 'Content-Type': 'application/octet-stream' }, body: corpo }, ':/content');
-  const receber = (nome) => graph(nome, { method: 'GET' }, ':/content');
+  async function achar(nome, paiId) {
+    const q = "name='" + nome.replace(/'/g, "\\'") + "' and trashed=false" + (paiId ? " and '" + paiId + "' in parents" : " and mimeType='application/vnd.google-apps.folder'");
+    const r = await drive(API + '?fields=files(id,name,modifiedTime,size)&q=' + encodeURIComponent(q));
+    return (await r.json()).files[0] || null;
+  }
+  async function pasta() {
+    if (pastaId) return pastaId;
+    let f = await achar(cfg.PASTA, null);
+    if (!f) {
+      const r = await drive(API + '?fields=id', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: cfg.PASTA, mimeType: 'application/vnd.google-apps.folder' }) });
+      f = await r.json();
+    }
+    return (pastaId = f.id);
+  }
+  async function enviar(nome, corpo) {
+    const pai = await pasta();
+    const ex = await achar(nome, pai);
+    if (ex) return drive(UP + '/' + ex.id + '?uploadType=media', { method: 'PATCH', headers: { 'Content-Type': 'application/octet-stream' }, body: corpo });
+    const lim = 'fazenda' + Date.now();
+    const meta = JSON.stringify({ name: nome, parents: [pai] });
+    const partes = new Blob([
+      '--' + lim + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + meta + '\r\n',
+      '--' + lim + '\r\nContent-Type: application/octet-stream\r\n\r\n', corpo, '\r\n--' + lim + '--'
+    ]);
+    return drive(UP + '?uploadType=multipart', { method: 'POST', headers: { 'Content-Type': 'multipart/related; boundary=' + lim }, body: partes });
+  }
+  async function receber(nome) {
+    const pai = await pasta();
+    const ex = await achar(nome, pai);
+    if (!ex) throw new Error('Arquivo ' + nome + ' ainda nao existe no Drive.');
+    return drive(API + '/' + ex.id + '?alt=media');
+  }
 
   $('btnTextoGravar').onclick = async () => {
     try {
       const doc = { gravadoEm: new Date().toISOString(), aparelho: navigator.userAgent.slice(0, 80) };
       await enviar(cfg.ARQUIVO_TEXTO, JSON.stringify(doc));
-      log('Gravei ' + cfg.ARQUIVO_TEXTO + ' no OneDrive.', 'ok');
+      log('Gravei ' + cfg.ARQUIVO_TEXTO + ' na pasta "' + cfg.PASTA + '" do Drive.', 'ok');
     } catch (e) { falha(e); }
   };
   $('btnTextoLer').onclick = async () => {
     try {
       const r = await receber(cfg.ARQUIVO_TEXTO);
-      log('Li do OneDrive: ' + (await r.text()), 'ok');
+      log('Li do Drive: ' + (await r.text()), 'ok');
     } catch (e) { falha(e); }
   };
 
@@ -129,7 +184,6 @@
       const info = await chamar('iniciar');
       $('sqlite').textContent = 'SQLite ' + info.versao + ' (guardado no aparelho)';
       mostrarResumo(await chamar('resumo'));
-      ['btnInserir', 'btnBancoEnviar', 'btnBancoReceber'].forEach((id) => { $(id).dataset.banco = '1'; });
       $('btnInserir').disabled = false;
       log('Banco local aberto.', 'ok');
     } catch (e) { $('sqlite').textContent = 'nao abriu'; falha(e); }
@@ -142,15 +196,15 @@
     try {
       const bytes = await chamar('exportar');
       await enviar(cfg.ARQUIVO_BANCO, bytes);
-      log('Enviei o banco (' + bytes.byteLength + ' bytes) para o OneDrive.', 'ok');
+      log('Enviei o banco (' + bytes.byteLength + ' bytes) para o Drive.', 'ok');
     } catch (e) { falha(e); }
   };
   $('btnBancoReceber').onclick = async () => {
     try {
-      if (!confirm('Isto SUBSTITUI o banco deste aparelho pelo do OneDrive. Continuar?')) return;
+      if (!confirm('Isto SUBSTITUI o banco deste aparelho pelo do Drive. Continuar?')) return;
       const r = await receber(cfg.ARQUIVO_BANCO);
       mostrarResumo(await chamar('importar', { bytes: await r.arrayBuffer() }));
-      log('Banco do OneDrive carregado neste aparelho.', 'ok');
+      log('Banco do Drive carregado neste aparelho.', 'ok');
     } catch (e) { falha(e); }
   };
 
@@ -160,6 +214,7 @@
   }
 
   mostrarAparelho();
-  iniciarLogin().catch(falha);
+  atualizarConta();
+  if (!configurado()) log('Falta colocar o ID do cliente em config.js (veja LEIA-ME.md, passo 2).', 'erro');
   iniciarBanco();
 })();
