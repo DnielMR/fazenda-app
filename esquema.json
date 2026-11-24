@@ -3,6 +3,7 @@
   {
    "tabela": "tbAreas",
    "sql": "areas",
+   "classe": "cadastro",
    "colunas": [
     {
      "coluna": "ID Área",
@@ -45,6 +46,7 @@
   {
    "tabela": "tbProdutos",
    "sql": "produtos",
+   "classe": "cadastro",
    "colunas": [
     {
      "coluna": "ID Produto",
@@ -103,6 +105,7 @@
   {
    "tabela": "tbSafras",
    "sql": "safras",
+   "classe": "cadastro",
    "colunas": [
     {
      "coluna": "ID Safra",
@@ -110,7 +113,8 @@
     },
     {
      "coluna": "ID Área",
-     "sql": "id_area"
+     "sql": "id_area",
+     "ref": "areas"
     },
     {
      "coluna": "Ano",
@@ -145,6 +149,7 @@
   {
    "tabela": "tbGrupos",
    "sql": "grupos",
+   "classe": "cadastro",
    "colunas": [
     {
      "coluna": "ID Grupo",
@@ -163,6 +168,7 @@
   {
    "tabela": "tbPrincipiosAtivos",
    "sql": "principios_ativos",
+   "classe": "cadastro",
    "colunas": [
     {
      "coluna": "ID Princípio Ativo",
@@ -181,34 +187,41 @@
   {
    "tabela": "tbProdutoGrupos",
    "sql": "produto_grupos",
+   "classe": "relacao",
    "colunas": [
     {
      "coluna": "ID Produto",
-     "sql": "id_produto"
+     "sql": "id_produto",
+     "ref": "produtos"
     },
     {
      "coluna": "ID Grupo",
-     "sql": "id_grupo"
+     "sql": "id_grupo",
+     "ref": "grupos"
     }
    ]
   },
   {
    "tabela": "tbProdutoPrincipios",
    "sql": "produto_principios",
+   "classe": "relacao",
    "colunas": [
     {
      "coluna": "ID Produto",
-     "sql": "id_produto"
+     "sql": "id_produto",
+     "ref": "produtos"
     },
     {
      "coluna": "ID Princípio Ativo",
-     "sql": "id_principio"
+     "sql": "id_principio",
+     "ref": "principios_ativos"
     }
    ]
   },
   {
    "tabela": "tbMedidas",
    "sql": "medidas",
+   "classe": "cadastro",
    "colunas": [
     {
      "coluna": "ID Medida",
@@ -263,6 +276,7 @@
   {
    "tabela": "tbCultivares",
    "sql": "cultivares",
+   "classe": "cadastro",
    "colunas": [
     {
      "coluna": "ID Cultivar",
@@ -285,6 +299,7 @@
   {
    "tabela": "tbCodigos",
    "sql": "codigos",
+   "classe": "cadastro",
    "colunas": [
     {
      "coluna": "ID Código",
@@ -292,7 +307,8 @@
     },
     {
      "coluna": "ID Cultivar",
-     "sql": "id_cultivar"
+     "sql": "id_cultivar",
+     "ref": "cultivares"
     },
     {
      "coluna": "Código",
@@ -315,6 +331,7 @@
   {
    "tabela": "tbSementes",
    "sql": "sementes",
+   "classe": "cadastro",
    "colunas": [
     {
      "coluna": "ID Semente",
@@ -322,11 +339,13 @@
     },
     {
      "coluna": "ID Produto",
-     "sql": "id_produto"
+     "sql": "id_produto",
+     "ref": "produtos"
     },
     {
      "coluna": "ID Código",
-     "sql": "id_codigo"
+     "sql": "id_codigo",
+     "ref": "codigos"
     },
     {
      "coluna": "Cultivar",
@@ -362,7 +381,8 @@
     },
     {
      "coluna": "ID Semente Base",
-     "sql": "id_semente_base"
+     "sql": "id_semente_base",
+     "ref": "produtos"
     },
     {
      "coluna": "Situação Tratamento",
@@ -385,14 +405,17 @@
   {
    "tabela": "tbTratamentoItens",
    "sql": "tratamento_itens",
+   "classe": "relacao",
    "colunas": [
     {
      "coluna": "ID Produto Semente",
-     "sql": "id_semente"
+     "sql": "id_semente",
+     "ref": "produtos"
     },
     {
      "coluna": "ID Produto Componente",
-     "sql": "id_componente"
+     "sql": "id_componente",
+     "ref": "produtos"
     },
     {
      "coluna": "Dose",
@@ -411,6 +434,7 @@
   {
    "tabela": "tbSafraCultivos",
    "sql": "safra_cultivos",
+   "classe": "cadastro",
    "colunas": [
     {
      "coluna": "ID Cultivo",
@@ -418,7 +442,8 @@
     },
     {
      "coluna": "ID Safra",
-     "sql": "id_safra"
+     "sql": "id_safra",
+     "ref": "safras"
     },
     {
      "coluna": "Ordem",
@@ -430,11 +455,13 @@
     },
     {
      "coluna": "ID Código",
-     "sql": "id_codigo"
+     "sql": "id_codigo",
+     "ref": "codigos"
     },
     {
      "coluna": "ID Produto Semente",
-     "sql": "id_produto"
+     "sql": "id_produto",
+     "ref": "produtos"
     },
     {
      "coluna": "Proporção (%)",
@@ -465,6 +492,7 @@
   {
    "tabela": "tbAplicacoes",
    "sql": "aplicacoes",
+   "classe": "transacao",
    "colunas": [
     {
      "coluna": "ID Aplicacao",
@@ -563,6 +591,7 @@
   {
    "tabela": "tbAplicacaoAreas",
    "sql": "aplicacao_areas",
+   "classe": "snapshot",
    "colunas": [
     {
      "coluna": "ID Aplicação Área",
@@ -570,11 +599,13 @@
     },
     {
      "coluna": "ID Aplicacao",
-     "sql": "id_aplicacao"
+     "sql": "id_aplicacao",
+     "ref": "aplicacoes"
     },
     {
      "coluna": "ID Área",
-     "sql": "id_area"
+     "sql": "id_area",
+     "ref": "areas"
     },
     {
      "coluna": "Fazenda (snapshot)",
@@ -594,7 +625,8 @@
     },
     {
      "coluna": "ID Cultivo",
-     "sql": "id_cultivo"
+     "sql": "id_cultivo",
+     "ref": "safra_cultivos"
     },
     {
      "coluna": "Parte (snapshot)",
@@ -617,6 +649,7 @@
   {
    "tabela": "tbAplicacaoItens",
    "sql": "aplicacao_itens",
+   "classe": "snapshot",
    "colunas": [
     {
      "coluna": "ID Item",
@@ -624,11 +657,13 @@
     },
     {
      "coluna": "ID Aplicacao",
-     "sql": "id_aplicacao"
+     "sql": "id_aplicacao",
+     "ref": "aplicacoes"
     },
     {
      "coluna": "ID Produto",
-     "sql": "id_produto"
+     "sql": "id_produto",
+     "ref": "produtos"
     },
     {
      "coluna": "Nome Comercial Emitido",
@@ -687,6 +722,7 @@
   {
    "tabela": "tbAplicacaoSaidas",
    "sql": "aplicacao_saidas",
+   "classe": "snapshot",
    "colunas": [
     {
      "coluna": "ID Saída",
@@ -694,7 +730,8 @@
     },
     {
      "coluna": "ID Aplicação",
-     "sql": "id_aplicacao"
+     "sql": "id_aplicacao",
+     "ref": "aplicacoes"
     },
     {
      "coluna": "Número Aplicação",
@@ -706,11 +743,13 @@
     },
     {
      "coluna": "ID Item",
-     "sql": "id_item"
+     "sql": "id_item",
+     "ref": "aplicacao_itens"
     },
     {
      "coluna": "ID Área",
-     "sql": "id_area"
+     "sql": "id_area",
+     "ref": "areas"
     },
     {
      "coluna": "Fazenda (snapshot)",
@@ -722,7 +761,8 @@
     },
     {
      "coluna": "ID Produto",
-     "sql": "id_produto"
+     "sql": "id_produto",
+     "ref": "produtos"
     },
     {
      "coluna": "Produto (snapshot)",
@@ -773,6 +813,7 @@
   {
    "tabela": "tbExecucaoItens",
    "sql": "execucao_itens",
+   "classe": "transacao",
    "colunas": [
     {
      "coluna": "ID Execução",
@@ -784,7 +825,8 @@
     },
     {
      "coluna": "ID Aplicação",
-     "sql": "id_aplicacao"
+     "sql": "id_aplicacao",
+     "ref": "aplicacoes"
     },
     {
      "coluna": "Número Aplicação",
@@ -792,7 +834,8 @@
     },
     {
      "coluna": "ID Área",
-     "sql": "id_area"
+     "sql": "id_area",
+     "ref": "areas"
     },
     {
      "coluna": "Nome Área Emitido",
@@ -800,11 +843,13 @@
     },
     {
      "coluna": "ID Item",
-     "sql": "id_item"
+     "sql": "id_item",
+     "ref": "aplicacao_itens"
     },
     {
      "coluna": "ID Produto",
-     "sql": "id_produto"
+     "sql": "id_produto",
+     "ref": "produtos"
     },
     {
      "coluna": "Nome Produto Emitido",
@@ -860,7 +905,8 @@
     },
     {
      "coluna": "ID Movimentação Estoque",
-     "sql": "id_movimentacao"
+     "sql": "id_movimentacao",
+     "ref": "mov_estoque"
     },
     {
      "coluna": "Confirmado em",
@@ -871,6 +917,7 @@
   {
    "tabela": "tbTratamentos",
    "sql": "tratamentos",
+   "classe": "transacao",
    "colunas": [
     {
      "coluna": "ID Tratamento",
@@ -882,11 +929,13 @@
     },
     {
      "coluna": "ID Semente Tratada",
-     "sql": "id_semente_tratada"
+     "sql": "id_semente_tratada",
+     "ref": "produtos"
     },
     {
      "coluna": "ID Semente Base",
-     "sql": "id_semente_base"
+     "sql": "id_semente_base",
+     "ref": "produtos"
     },
     {
      "coluna": "Quantidade",
@@ -921,6 +970,7 @@
   {
    "tabela": "tbMovEstoque",
    "sql": "mov_estoque",
+   "classe": "transacao",
    "colunas": [
     {
      "coluna": "ID Movimentação",
@@ -932,7 +982,8 @@
     },
     {
      "coluna": "ID Produto",
-     "sql": "id_produto"
+     "sql": "id_produto",
+     "ref": "produtos"
     },
     {
      "coluna": "Produto",
@@ -956,23 +1007,28 @@
     },
     {
      "coluna": "ID Aplicação",
-     "sql": "id_aplicacao"
+     "sql": "id_aplicacao",
+     "ref": "aplicacoes"
     },
     {
      "coluna": "ID Área",
-     "sql": "id_area"
+     "sql": "id_area",
+     "ref": "areas"
     },
     {
      "coluna": "ID Execução",
-     "sql": "id_execucao"
+     "sql": "id_execucao",
+     "ref": "execucao_itens"
     },
     {
      "coluna": "ID Movimentação Revertida",
-     "sql": "id_movimentacao_revertida"
+     "sql": "id_movimentacao_revertida",
+     "ref": "mov_estoque"
     },
     {
      "coluna": "ID Tratamento",
-     "sql": "id_tratamento"
+     "sql": "id_tratamento",
+     "ref": "tratamentos"
     },
     {
      "coluna": "Responsável",
@@ -1007,6 +1063,7 @@
   {
    "tabela": "tbHistoricoAplicacoes",
    "sql": "historico_aplicacoes",
+   "classe": "derivada",
    "colunas": [
     {
      "coluna": "ID Registro Histórico",
@@ -1014,7 +1071,8 @@
     },
     {
      "coluna": "ID Aplicação",
-     "sql": "id_aplicacao"
+     "sql": "id_aplicacao",
+     "ref": "aplicacoes"
     },
     {
      "coluna": "Número Aplicação",
@@ -1034,7 +1092,8 @@
     },
     {
      "coluna": "ID Área",
-     "sql": "id_area"
+     "sql": "id_area",
+     "ref": "areas"
     },
     {
      "coluna": "Área",
@@ -1042,7 +1101,8 @@
     },
     {
      "coluna": "ID Cultivo",
-     "sql": "id_cultivo"
+     "sql": "id_cultivo",
+     "ref": "safra_cultivos"
     },
     {
      "coluna": "Parte",
@@ -1058,7 +1118,8 @@
     },
     {
      "coluna": "ID Produto",
-     "sql": "id_produto"
+     "sql": "id_produto",
+     "ref": "produtos"
     },
     {
      "coluna": "Produto",
@@ -1126,13 +1187,15 @@
     },
     {
      "coluna": "ID Execução de Origem",
-     "sql": "id_execucao_origem"
+     "sql": "id_execucao_origem",
+     "ref": "execucao_itens"
     }
    ]
   },
   {
    "tabela": "tbAuditoria",
    "sql": "auditoria",
+   "classe": "log",
    "colunas": [
     {
      "coluna": "ID Evento",
@@ -1179,6 +1242,7 @@
   {
    "tabela": "tbDoseExcecoes",
    "sql": "dose_excecoes",
+   "classe": "reservada",
    "colunas": [
     {
      "coluna": "ID Exceção",
@@ -1186,15 +1250,18 @@
     },
     {
      "coluna": "ID Aplicação",
-     "sql": "id_aplicacao"
+     "sql": "id_aplicacao",
+     "ref": "aplicacoes"
     },
     {
      "coluna": "ID Item",
-     "sql": "id_item"
+     "sql": "id_item",
+     "ref": "aplicacao_itens"
     },
     {
      "coluna": "ID Área",
-     "sql": "id_area"
+     "sql": "id_area",
+     "ref": "areas"
     },
     {
      "coluna": "Dose Aplicável",
@@ -1221,6 +1288,7 @@
   {
    "tabela": "tbGlossario",
    "sql": "glossario",
+   "classe": "cadastro",
    "colunas": [
     {
      "coluna": "ID Termo",

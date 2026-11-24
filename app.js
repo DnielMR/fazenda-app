@@ -1,8 +1,8 @@
-﻿// Prototipo: prova tres coisas no iPhone e no PC
+// Prototipo: prova tres coisas no iPhone e no PC
 // 1) login Google  2) ler/gravar arquivo numa pasta do Google Drive
 // 3) banco SQLite local no aparelho, com envio e recebimento via Drive.
 (function () {
-  const VERSAO_APP = '0.0.4'; // mudar junto com index.html, config.js e sw.js
+  const VERSAO_APP = '0.0.6'; // mudar junto com index.html, config.js e sw.js
   const cfg = window.APP_CONFIG;
   const $ = (id) => document.getElementById(id);
 
@@ -226,10 +226,10 @@
   async function mostrarLinhas(nome) {
     tabelaAtual = nome;
     try {
-      const r = await chamar('ler', { tabela: nome, limite: 100 });
+      const r = await chamar('ler', { tabela: nome, limite: 100, ordem: $('ordem').value });
       const g = $('grade'); g.innerHTML = '';
       const info = document.createElement('p'); info.className = 'sub'; info.style.margin = '0 0 6px';
-      info.textContent = nome + ': ' + r.total + ' linhas' + (r.total > r.linhas.length ? ' (mostrando as ' + r.linhas.length + ' primeiras)' : '');
+      info.textContent = nome + ': ' + r.total + ' linhas' + (r.total > r.linhas.length ? ' (mostrando as ' + r.linhas.length + (r.linhas.length && $('ordem').value === 'desc' ? ' mais recentes)' : ' primeiras)') : '');
       g.appendChild(info);
       if (!r.linhas.length) { const v = document.createElement('p'); v.className = 'sub'; v.textContent = '(vazia)'; g.appendChild(v); return; }
       const tb = document.createElement('table');
@@ -241,6 +241,7 @@
     } catch (e) { falha(e); }
   }
   $('tabelas').onchange = (e) => mostrarLinhas(e.target.value);
+  $('ordem').onchange = () => mostrarLinhas($('tabelas').value);
   async function iniciarBanco() {
     try {
       worker = new Worker('./db.worker.js', { type: 'module' });
@@ -283,7 +284,7 @@
   async function importarXlsm(parcial) {
     const esquema = await (await fetch('./esquema.json', { cache: 'no-store' })).json();
     const sql = await (await fetch('./esquema.sql', { cache: 'no-store' })).text();
-    const r = await chamar('xlsm', { dados: leitura.dados, esquema, sql, parcial });
+    const r = await chamar('xlsm', { dados: leitura.dados, esquema, sql, parcial, arquivo: leitura.nome, usuario: rotuloConta || 'app web' });
     if (!r.sucesso) {
       mostrarRelatorio(['NADA foi importado; o banco anterior foi mantido. Problemas encontrados:']
         .concat(r.erros.map((x) => x.tabela + (x.linha ? ' (linha ' + x.linha + ' do Excel)' : '') + ': ' + x.msg)), 'erro');
@@ -310,14 +311,114 @@
     mostrarRelatorio(txt);
     log('Planilha "' + leitura.nome + '" importada' + (r.descartes && r.descartes.length ? ' (' + r.descartes.length + ' descartados).' : '.'), 'ok');
   }
+  // Copia de seguranca automatica (baixa um .db com a data) antes de atualizar ou substituir
+  async function baixarBackup() {
+    const bytes = await chamar('exportar');
+    const d = new Date(), p = (n) => String(n).padStart(2, '0');
+    const nome = 'fazenda_backup_' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + '.db';
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' })); a.download = nome;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    log('Copia de seguranca baixada: ' + nome, 'ok');
+    return nome;
+  }
+  const NOME_TABELA = { areas: 'Area', produtos: 'Produto', sementes: 'Semente', safras: 'Safra', safra_cultivos: 'Parte da safra', grupos: 'Grupo', principios_ativos: 'Principio ativo', medidas: 'Medida', cultivares: 'Cultivar', codigos: 'Codigo', aplicacoes: 'Ficha', mov_estoque: 'Movimento de estoque' };
+  const el = (tag, txt, css) => { const e = document.createElement(tag); if (txt !== undefined) e.textContent = txt; if (css) e.style.cssText = css; return e; };
+
+  // Atualizar: compara a planilha com o banco e pergunta, para cada duplicidade, qual manter
+  async function atualizarComPlanilha() {
+    const esquema = await (await fetch('./esquema.json', { cache: 'no-store' })).json();
+    const sql = await (await fetch('./esquema.sql', { cache: 'no-store' })).text();
+    const r = await chamar('comparar', { dados: leitura.dados, esquema, sql });
+    const R = $('relatorio'); R.innerHTML = '';
+    if (!r.sucesso) {
+      mostrarRelatorio(['Nada foi alterado. Esta planilha nao serve para atualizar:'].concat(r.erros.map((x) => x.tabela + ': ' + x.msg)), 'erro');
+      return;
+    }
+    const lin = r.resumo.filter((t) => t.novos + t.conflitos + t.bloqueados + t.invalidas > 0);
+    const totNovos = r.resumo.reduce((s, t) => s + t.novos, 0), totIguais = r.resumo.reduce((s, t) => s + t.iguais, 0);
+    R.appendChild(el('p', 'Comparacao de "' + leitura.nome + '" com o banco do aparelho: ' + totNovos + ' registro(s) novo(s), ' + totIguais + ' igual(is) (ignorados), ' + r.conflitos.length + ' em duplicidade para voce decidir.', 'margin:0 0 6px;font-weight:600'));
+    const ul = el('ul', undefined, 'margin:0 0 8px;padding-left:18px;font-size:13px');
+    lin.forEach((t) => ul.appendChild(el('li', (NOME_TABELA[t.tabela] || t.tabela) + ': ' + t.novos + ' novo(s)'
+      + (t.conflitos ? ', ' + t.conflitos + ' duplicado(s)' : '') + (t.bloqueados ? ', ' + t.bloqueados + ' bloqueado(s)' : '') + (t.invalidas ? ', ' + t.invalidas + ' invalido(s)' : ''))));
+    if (lin.length) R.appendChild(ul);
+    if (r.bloqueados.length) R.appendChild(el('p', 'Nao serao importados, e o que depende deles tambem nao (valor que deve ser unico ja existe, ex.: numero de ficha repetido): ' + r.bloqueados.slice(0, 5).join('; ') + (r.bloqueados.length > 5 ? '...' : ''), 'color:var(--err);font-size:13px;margin:0 0 8px'));
+    if (r.invalidas.length) R.appendChild(el('p', r.invalidas.length + ' linha(s) da planilha tem dado invalido e serao ignoradas (ex.: ' + r.invalidas[0].tabela + ', linha ' + r.invalidas[0].linha + ').', 'color:var(--err);font-size:13px;margin:0 0 8px'));
+    const escolhas = {};
+    let atualizaOk = () => {};
+    const pad4 = (n) => String(n).padStart(4, '0');
+    r.conflitos.forEach((c, n) => {
+      const ficha = c.tipo === 'ficha';
+      const card = el('div', undefined, 'border:1px solid ' + (ficha ? 'var(--err)' : 'var(--borda)') + ';border-radius:10px;padding:10px;margin:0 0 8px;font-size:13px');
+      card.appendChild(el('div', (n + 1) + '. ' + (NOME_TABELA[c.tabela] || c.tabela) + ': ' + c.rotulo, 'font-weight:600'));
+      card.appendChild(el('div', ficha ? 'Numero repetido: o app ja tem uma ficha ' + c.rotuloApp + ' e ela e OUTRA ficha. Decida o que fazer com a ficha da planilha.'
+        : (c.tipo === 'nome' ? 'Mesmo nome, mas cadastros com IDs diferentes (' + c.rotuloApp + ' no app).' : 'Mesmo ID, com valores diferentes.'), 'color:var(--mut);margin:2px 0 6px'));
+      if (ficha) { card.appendChild(el('div', 'No app: ' + c.app.texto, 'margin:2px 0')); card.appendChild(el('div', 'Na planilha: ' + c.nova.texto, 'margin:2px 0 6px')); }
+      const grupo = 'dec' + n; escolhas[c.id] = c.sugestao;
+      const opcoes = ficha
+        ? [['descartar', 'Descartar', 'a ficha da planilha nao entra, nem o que depende dela (itens, execucoes e movimentos de estoque). Fica registrado na auditoria.'],
+          ['renumerar', 'Renumerar', 'a ficha da planilha entra como n. ' + pad4(c.novoNumero) + '. Fica registrado na propria ficha (observacoes) e na auditoria.']]
+        : [['app', 'Manter o do app', c.app.texto], ['planilha', 'Usar o da planilha', c.nova.texto]];
+      opcoes.forEach(([val, rot, txt]) => {
+        const lab = el('label', undefined, 'display:block;margin:4px 0;line-height:1.35');
+        const rd = document.createElement('input'); rd.type = 'radio'; rd.name = grupo; rd.value = val; rd.checked = c.sugestao === val; rd.style.marginRight = '6px';
+        rd.onchange = () => { escolhas[c.id] = val; atualizaOk(); };
+        lab.appendChild(rd); lab.appendChild(el('b', rot + (!ficha && c.maisRecente && c.sugestao === val ? ' (mais recente)' : '') + ': ')); lab.appendChild(document.createTextNode(txt));
+        card.appendChild(lab);
+      });
+      if (c.campos.length) card.appendChild(el('div', 'Campos diferentes: ' + c.campos.map((x) => x.col + ' (app: ' + (x.app === null ? 'vazio' : x.app) + ' / planilha: ' + (x.nova === null ? 'vazio' : x.nova) + ')').join('; ') + (c.totalCampos > c.campos.length ? '...' : ''), 'color:var(--mut);margin-top:4px;word-break:break-word'));
+      R.appendChild(card);
+    });
+    const fim = (c) => chamar('cancelarComparacao').then(() => { if (c) mostrarRelatorio(['Atualizacao cancelada. Nada foi alterado.']); });
+    async function aplicar(parcial) {
+      const m = await chamar('mesclar', { decisoes: escolhas, parcial, arquivo: leitura.nome, usuario: rotuloConta || 'app web' });
+      if (!m.sucesso) {
+        mostrarRelatorio(['NADA foi alterado; o banco anterior foi mantido. Problemas encontrados:'].concat(m.erros.map((x) => x.tabela + ': ' + x.msg)), 'erro');
+        const b = el('button', 'Atualizar so com o que for valido (descarta os registros acima)'); b.className = 'sec';
+        b.onclick = () => tarefa(b, 'Atualizando...', async () => { if (confirm('Os registros com problema serao DESCARTADOS (listados no relatorio). Continuar?')) await aplicar(true); });
+        $('relatorio').appendChild(b);
+        log('Atualizacao recusada: ' + m.erros.length + ' problema(s).', 'erro'); return;
+      }
+      mostrarTabelas(m.tabelas);
+      const txt = ['Atualizacao concluida com "' + leitura.nome + '".'];
+      m.contagem.filter((c) => c.inseridos + c.atualizados + c.mantidos + c.bloqueados > 0).forEach((c) => txt.push((NOME_TABELA[c.tabela] || c.tabela) + ': ' + c.inseridos + ' inserido(s), ' + c.atualizados + ' atualizado(s) pela planilha, ' + c.mantidos + ' mantido(s) do app'));
+      if (m.fichas && m.fichas.length) {
+        txt.push('Fichas com numero repetido (decisao registrada na auditoria):');
+        m.fichas.forEach((f) => txt.push('ficha ' + pad4(f.de) + (f.acao === 'renumerar' ? ' renumerada para ' + pad4(f.para) + ' (nota na observacao da ficha)' : ' descartada, com o que dependia dela')));
+      }
+      if (m.saldos.length) { txt.push('ESTOQUE recalculado (saldo inicial + movimentos confirmados):'); m.saldos.forEach((s) => txt.push(s)); }
+      if (m.descartes.length) { txt.push('DESCARTADOS (' + m.descartes.length + '):'); m.descartes.forEach((x) => txt.push(x.tabela + ': ' + x.msg)); }
+      mostrarRelatorio(txt);
+      log('Banco atualizado com a planilha "' + leitura.nome + '".', 'ok');
+    }
+    const rotuloOk = 'Aplicar atualizacao (' + totNovos + ' novo(s), ' + r.conflitos.length + ' decisao(oes))';
+    const ok = el('button', rotuloOk);
+    atualizaOk = () => {
+      const falta = r.conflitos.filter((c) => c.tipo === 'ficha' && !escolhas[c.id]).length;
+      ok.disabled = falta > 0; ok.textContent = falta > 0 ? 'Decida ' + falta + ' ficha(s) de numero repetido para continuar' : rotuloOk;
+    };
+    atualizaOk();
+    ok.onclick = () => tarefa(ok, 'Atualizando...', () => aplicar(false));
+    const cancela = el('button', 'Cancelar (nao altera nada)'); cancela.className = 'sec'; cancela.onclick = () => fim(true);
+    R.appendChild(ok); R.appendChild(cancela);
+  }
+
   $('arquivoXlsm').onchange = async (e) => {
     const f = e.target.files[0]; e.target.value = '';
     if (!f) return;
-    if (!confirm('Importar "' + f.name + '" SUBSTITUI o banco deste aparelho. Continuar?')) return;
-    await tarefa($('btnImportarXlsm'), 'Importando...', async () => {
+    await tarefa($('btnImportarXlsm'), 'Lendo...', async () => {
       mostrarRelatorio(['Lendo a planilha...']);
       leitura = { nome: f.name, dados: await window.LerXlsm(f) };
-      await importarXlsm(false);
+      const tabs = await chamar('tabelas');
+      const linhas = tabs.reduce((s, t) => s + t.linhas, 0);
+      if (!linhas) { await importarXlsm(false); return; } // banco vazio: nada a decidir
+      const R = $('relatorio'); R.innerHTML = '';
+      R.appendChild(el('p', 'O banco deste aparelho ja tem ' + linhas + ' linhas. O que fazer com "' + f.name + '"? (uma copia de seguranca do banco atual sera baixada antes)', 'margin:0 0 6px;font-weight:600'));
+      const atual = el('button', 'Atualizar: juntar com o que ja existe (voce decide as duplicidades)');
+      atual.onclick = () => tarefa(atual, 'Comparando...', async () => { await baixarBackup(); await atualizarComPlanilha(); });
+      const subst = el('button', 'Substituir: apagar o banco atual e usar so a planilha'); subst.className = 'sec';
+      subst.onclick = () => tarefa(subst, 'Importando...', async () => { if (!confirm('SUBSTITUIR apaga os dados atuais do aparelho (a copia de seguranca sera baixada). Continuar?')) return; await baixarBackup(); await importarXlsm(false); });
+      const canc = el('button', 'Cancelar'); canc.className = 'sec'; canc.onclick = () => mostrarRelatorio(['Importacao cancelada. Nada foi alterado.']);
+      R.appendChild(atual); R.appendChild(subst); R.appendChild(canc);
     });
   };
   // Banco novo: so as tabelas do esquema (esquema.sql, gerado de esquema/colunas.csv)
