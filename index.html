@@ -45,15 +45,15 @@
   </section>
 
   <section>
-    <h2>2. Conta Microsoft</h2>
+    <h2>2. Conta Google</h2>
     <dl><dt>Conta</dt><dd id="conta">nao entrou</dd></dl>
-    <p class="sub" style="margin:8px 0 0">Endereco de retorno a cadastrar: <code id="redirect"></code></p>
-    <button id="btnEntrar">Entrar com a Microsoft</button>
+    <p class="sub" style="margin:8px 0 0">Origem a cadastrar no Google: <code id="origem"></code></p>
+    <button id="btnEntrar">Entrar com o Google</button>
     <button class="sec" id="btnSair" hidden>Sair</button>
   </section>
 
   <section>
-    <h2>3. Arquivo na pasta do app (OneDrive)</h2>
+    <h2>3. Arquivo na pasta do app (Google Drive)</h2>
     <button id="btnTextoGravar" disabled>Gravar arquivo de teste</button>
     <button class="sec" id="btnTextoLer" disabled>Ler arquivo de teste</button>
   </section>
@@ -63,8 +63,8 @@
     <dl><dt>Motor</dt><dd id="sqlite">iniciando...</dd><dt>Registros</dt><dd id="linhas">-</dd></dl>
     <pre id="ultimas"></pre>
     <button id="btnInserir" disabled>Gravar um registro</button>
-    <button class="sec" id="btnBancoEnviar" disabled>Enviar banco para o OneDrive</button>
-    <button class="sec" id="btnBancoReceber" disabled>Receber banco do OneDrive</button>
+    <button class="sec" id="btnBancoEnviar" disabled>Enviar banco para o Drive</button>
+    <button class="sec" id="btnBancoReceber" disabled>Receber banco do Drive</button>
   </section>
 
   <section>
@@ -73,7 +73,7 @@
   </section>
 </main>
 <script src="config.js"></script>
-<script src="lib/msal-browser.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="app.js"></script>
 </body>
 </html>
