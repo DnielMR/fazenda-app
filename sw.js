@@ -1,5 +1,5 @@
 // Service worker: deixa o app abrir sem internet (so os arquivos do proprio app; dados nunca passam por aqui).
-const VERSAO = '0.0.6'; // mudar junto com index.html (data-versao), config.js (VERSAO) e app.js (VERSAO_APP)
+const VERSAO = '0.0.7'; // mudar junto com index.html (data-versao), config.js (VERSAO) e app.js (VERSAO_APP)
 const ARQUIVOS = ['./', 'index.html', 'app.js', 'config.js', 'db.worker.js', 'manifest.webmanifest',
   'esquema.sql', 'esquema.json', 'xlsm.js', 'lib/sqlite3.mjs', 'lib/sqlite3.wasm', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 

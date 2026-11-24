@@ -7,39 +7,53 @@
    "colunas": [
     {
      "coluna": "ID Área",
-     "sql": "id_area"
+     "sql": "id_area",
+     "tipo": "id"
     },
     {
      "coluna": "Fazenda",
-     "sql": "fazenda"
+     "sql": "fazenda",
+     "tipo": "texto"
     },
     {
      "coluna": "Nome/Identificação Área",
-     "sql": "nome"
+     "sql": "nome",
+     "tipo": "texto",
+     "nome_unico": true
     },
     {
      "coluna": "Área Cadastrada (ha)",
-     "sql": "hectares"
+     "sql": "hectares",
+     "tipo": "dec"
     },
     {
      "coluna": "Cultivar Predominante",
-     "sql": "cultivar"
+     "sql": "cultivar",
+     "tipo": "texto"
     },
     {
      "coluna": "Situação",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Ativa",
+      "Inativa"
+     ]
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     },
     {
      "coluna": "Atualizado em",
-     "sql": "atualizado_em"
+     "sql": "atualizado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -50,55 +64,78 @@
    "colunas": [
     {
      "coluna": "ID Produto",
-     "sql": "id_produto"
+     "sql": "id_produto",
+     "tipo": "id"
     },
     {
      "coluna": "Nome Comercial",
-     "sql": "nome"
+     "sql": "nome",
+     "tipo": "texto",
+     "nome_unico": true
     },
     {
      "coluna": "Tipo Produto",
-     "sql": "tipo"
+     "sql": "tipo",
+     "tipo": "enum",
+     "dominio": [
+      "Insumo",
+      "Semente"
+     ]
     },
     {
      "coluna": "Grupo",
-     "sql": "grupo"
+     "sql": "grupo",
+     "tipo": "texto"
     },
     {
      "coluna": "Princípios Ativos",
-     "sql": "principios_ativos"
+     "sql": "principios_ativos",
+     "tipo": "texto"
     },
     {
      "coluna": "Unidade Base Estoque",
-     "sql": "unidade_base"
+     "sql": "unidade_base",
+     "tipo": "texto",
+     "unidade": true
     },
     {
      "coluna": "Saldo Inicial",
-     "sql": "saldo_inicial"
+     "sql": "saldo_inicial",
+     "tipo": "dec"
     },
     {
      "coluna": "Estoque Mínimo",
-     "sql": "estoque_minimo"
+     "sql": "estoque_minimo",
+     "tipo": "dec"
     },
     {
      "coluna": "Situação",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Ativo",
+      "Inativo"
+     ]
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Saldo Atual Calculado",
-     "sql": "saldo_atual"
+     "sql": "saldo_atual",
+     "tipo": "dec"
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     },
     {
      "coluna": "Atualizado em",
-     "sql": "atualizado_em"
+     "sql": "atualizado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -109,40 +146,53 @@
    "colunas": [
     {
      "coluna": "ID Safra",
-     "sql": "id_safra"
+     "sql": "id_safra",
+     "tipo": "id"
     },
     {
      "coluna": "ID Área",
      "sql": "id_area",
+     "tipo": "id",
      "ref": "areas"
     },
     {
      "coluna": "Ano",
-     "sql": "ano"
+     "sql": "ano",
+     "tipo": "int"
     },
     {
      "coluna": "Número",
-     "sql": "numero"
+     "sql": "numero",
+     "tipo": "int"
     },
     {
      "coluna": "Safra",
-     "sql": "safra"
+     "sql": "safra",
+     "tipo": "safra"
     },
     {
      "coluna": "Cultivar",
-     "sql": "cultivar"
+     "sql": "cultivar",
+     "tipo": "texto"
     },
     {
      "coluna": "Situação",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Aberta",
+      "Encerrada"
+     ]
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     },
     {
      "coluna": "Atualizado em",
-     "sql": "atualizado_em"
+     "sql": "atualizado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -153,15 +203,19 @@
    "colunas": [
     {
      "coluna": "ID Grupo",
-     "sql": "id_grupo"
+     "sql": "id_grupo",
+     "tipo": "id"
     },
     {
      "coluna": "Nome",
-     "sql": "nome"
+     "sql": "nome",
+     "tipo": "texto",
+     "nome_unico": true
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -172,15 +226,19 @@
    "colunas": [
     {
      "coluna": "ID Princípio Ativo",
-     "sql": "id_principio"
+     "sql": "id_principio",
+     "tipo": "id"
     },
     {
      "coluna": "Nome",
-     "sql": "nome"
+     "sql": "nome",
+     "tipo": "texto",
+     "nome_unico": true
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -192,11 +250,13 @@
     {
      "coluna": "ID Produto",
      "sql": "id_produto",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "ID Grupo",
      "sql": "id_grupo",
+     "tipo": "id",
      "ref": "grupos"
     }
    ]
@@ -209,11 +269,13 @@
     {
      "coluna": "ID Produto",
      "sql": "id_produto",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "ID Princípio Ativo",
      "sql": "id_principio",
+     "tipo": "id",
      "ref": "principios_ativos"
     }
    ]
@@ -225,51 +287,82 @@
    "colunas": [
     {
      "coluna": "ID Medida",
-     "sql": "id_medida"
+     "sql": "id_medida",
+     "tipo": "id"
     },
     {
      "coluna": "Sigla",
-     "sql": "sigla"
+     "sql": "sigla",
+     "tipo": "texto"
     },
     {
      "coluna": "Nome",
-     "sql": "nome"
+     "sql": "nome",
+     "tipo": "texto"
     },
     {
      "coluna": "Tipo",
-     "sql": "tipo"
+     "sql": "tipo",
+     "tipo": "enum",
+     "dominio": [
+      "Quantidade",
+      "Dose"
+     ]
     },
     {
      "coluna": "Grandeza",
-     "sql": "grandeza"
+     "sql": "grandeza",
+     "tipo": "enum",
+     "dominio": [
+      "Massa",
+      "Volume",
+      "Sementes",
+      "Unidade"
+     ]
     },
     {
      "coluna": "Fator",
-     "sql": "fator"
+     "sql": "fator",
+     "tipo": "dec"
     },
     {
      "coluna": "Por",
-     "sql": "por"
+     "sql": "por",
+     "tipo": "enum",
+     "dominio": [
+      "ha",
+      "kg de semente",
+      "sementes"
+     ]
     },
     {
      "coluna": "Quantidade Por",
-     "sql": "quantidade_por"
+     "sql": "quantidade_por",
+     "tipo": "dec"
     },
     {
      "coluna": "Apelidos",
-     "sql": "apelidos"
+     "sql": "apelidos",
+     "tipo": "texto"
     },
     {
      "coluna": "Situação",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Ativa",
+      "Inativa"
+     ]
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -280,19 +373,28 @@
    "colunas": [
     {
      "coluna": "ID Cultivar",
-     "sql": "id_cultivar"
+     "sql": "id_cultivar",
+     "tipo": "id"
     },
     {
      "coluna": "Cultivar",
-     "sql": "cultivar"
+     "sql": "cultivar",
+     "tipo": "texto",
+     "nome_unico": true
     },
     {
      "coluna": "Situação",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Ativa",
+      "Inativa"
+     ]
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -303,28 +405,38 @@
    "colunas": [
     {
      "coluna": "ID Código",
-     "sql": "id_codigo"
+     "sql": "id_codigo",
+     "tipo": "id"
     },
     {
      "coluna": "ID Cultivar",
      "sql": "id_cultivar",
+     "tipo": "id",
      "ref": "cultivares"
     },
     {
      "coluna": "Código",
-     "sql": "codigo"
+     "sql": "codigo",
+     "tipo": "texto"
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Situação",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Ativa",
+      "Inativa"
+     ]
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -335,70 +447,95 @@
    "colunas": [
     {
      "coluna": "ID Semente",
-     "sql": "id_semente"
+     "sql": "id_semente",
+     "tipo": "id"
     },
     {
      "coluna": "ID Produto",
      "sql": "id_produto",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "ID Código",
      "sql": "id_codigo",
+     "tipo": "id",
      "ref": "codigos"
     },
     {
      "coluna": "Cultivar",
-     "sql": "cultivar"
+     "sql": "cultivar",
+     "tipo": "texto"
     },
     {
      "coluna": "Código",
-     "sql": "codigo"
+     "sql": "codigo",
+     "tipo": "texto"
     },
     {
      "coluna": "Lote",
-     "sql": "lote"
+     "sql": "lote",
+     "tipo": "texto"
     },
     {
      "coluna": "Germinação (%)",
-     "sql": "germinacao"
+     "sql": "germinacao",
+     "tipo": "dec"
     },
     {
      "coluna": "Vigor (%)",
-     "sql": "vigor"
+     "sql": "vigor",
+     "tipo": "dec"
     },
     {
      "coluna": "PMS (g)",
-     "sql": "pms"
+     "sql": "pms",
+     "tipo": "dec"
     },
     {
      "coluna": "Peneira",
-     "sql": "peneira"
+     "sql": "peneira",
+     "tipo": "texto"
     },
     {
      "coluna": "Origem Tratamento",
-     "sql": "origem_tratamento"
+     "sql": "origem_tratamento",
+     "tipo": "enum",
+     "dominio": [
+      "Sem tratamento",
+      "Industrial",
+      "On farm"
+     ]
     },
     {
      "coluna": "ID Semente Base",
      "sql": "id_semente_base",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "Situação Tratamento",
-     "sql": "situacao_tratamento"
+     "sql": "situacao_tratamento",
+     "tipo": "enum",
+     "dominio": [
+      "Rascunho",
+      "Aceito"
+     ]
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     },
     {
      "coluna": "Atualizado em",
-     "sql": "atualizado_em"
+     "sql": "atualizado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -410,24 +547,29 @@
     {
      "coluna": "ID Produto Semente",
      "sql": "id_semente",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "ID Produto Componente",
      "sql": "id_componente",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "Dose",
-     "sql": "dose"
+     "sql": "dose",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Dose",
-     "sql": "unidade_dose"
+     "sql": "unidade_dose",
+     "tipo": "texto"
     },
     {
      "coluna": "Ordem",
-     "sql": "ordem"
+     "sql": "ordem",
+     "tipo": "int"
     }
    ]
   },
@@ -438,54 +580,66 @@
    "colunas": [
     {
      "coluna": "ID Cultivo",
-     "sql": "id_cultivo"
+     "sql": "id_cultivo",
+     "tipo": "id"
     },
     {
      "coluna": "ID Safra",
      "sql": "id_safra",
+     "tipo": "id",
      "ref": "safras"
     },
     {
      "coluna": "Ordem",
-     "sql": "ordem"
+     "sql": "ordem",
+     "tipo": "int"
     },
     {
      "coluna": "Cultivar",
-     "sql": "cultivar"
+     "sql": "cultivar",
+     "tipo": "texto"
     },
     {
      "coluna": "ID Código",
      "sql": "id_codigo",
+     "tipo": "id",
      "ref": "codigos"
     },
     {
      "coluna": "ID Produto Semente",
      "sql": "id_produto",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "Proporção (%)",
-     "sql": "proporcao"
+     "sql": "proporcao",
+     "tipo": "dec"
     },
     {
      "coluna": "Hectares",
-     "sql": "hectares"
+     "sql": "hectares",
+     "tipo": "dec"
     },
     {
      "coluna": "Dose Planejada",
-     "sql": "dose"
+     "sql": "dose",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Dose",
-     "sql": "unidade_dose"
+     "sql": "unidade_dose",
+     "tipo": "texto"
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -496,95 +650,124 @@
    "colunas": [
     {
      "coluna": "ID Aplicacao",
-     "sql": "id_aplicacao"
+     "sql": "id_aplicacao",
+     "tipo": "id"
     },
     {
      "coluna": "Número Aplicação",
-     "sql": "numero"
+     "sql": "numero",
+     "tipo": "int"
     },
     {
      "coluna": "Fazenda",
-     "sql": "fazenda"
+     "sql": "fazenda",
+     "tipo": "texto"
     },
     {
      "coluna": "Produtor",
-     "sql": "produtor"
+     "sql": "produtor",
+     "tipo": "texto"
     },
     {
      "coluna": "Safra",
-     "sql": "safra"
+     "sql": "safra",
+     "tipo": "safra"
     },
     {
      "coluna": "Data Emissão",
-     "sql": "data_emissao"
+     "sql": "data_emissao",
+     "tipo": "data"
     },
     {
      "coluna": "Data Prevista",
-     "sql": "data_prevista"
+     "sql": "data_prevista",
+     "tipo": "data"
     },
     {
      "coluna": "Data Efetiva",
-     "sql": "data_efetiva"
+     "sql": "data_efetiva",
+     "tipo": "data"
     },
     {
      "coluna": "Cultivar",
-     "sql": "cultivar"
+     "sql": "cultivar",
+     "tipo": "texto"
     },
     {
      "coluna": "Estágio Cultura",
-     "sql": "estagio_cultura"
+     "sql": "estagio_cultura",
+     "tipo": "texto"
     },
     {
      "coluna": "Alvo",
-     "sql": "alvo"
+     "sql": "alvo",
+     "tipo": "texto"
     },
     {
      "coluna": "Responsável Técnico",
-     "sql": "responsavel_tecnico"
+     "sql": "responsavel_tecnico",
+     "tipo": "texto"
     },
     {
      "coluna": "Observações Gerais",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Situação",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Recomendada",
+      "Parcialmente executada",
+      "Executada",
+      "Cancelada"
+     ]
     },
     {
      "coluna": "Área Total Recomendada (ha)",
-     "sql": "area_total_ha"
+     "sql": "area_total_ha",
+     "tipo": "dec"
     },
     {
      "coluna": "Caminho PDF",
-     "sql": "caminho_pdf"
+     "sql": "caminho_pdf",
+     "tipo": "caminho"
     },
     {
      "coluna": "Data/Hora PDF",
-     "sql": "pdf_em"
+     "sql": "pdf_em",
+     "tipo": "datahora"
     },
     {
      "coluna": "Versão PDF",
-     "sql": "pdf_versao"
+     "sql": "pdf_versao",
+     "tipo": "int"
     },
     {
      "coluna": "Criado por",
-     "sql": "criado_por"
+     "sql": "criado_por",
+     "tipo": "texto"
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     },
     {
      "coluna": "Atualizado em",
-     "sql": "atualizado_em"
+     "sql": "atualizado_em",
+     "tipo": "datahora"
     },
     {
      "coluna": "E-mail Envio",
-     "sql": "email_envio"
+     "sql": "email_envio",
+     "tipo": "texto"
     },
     {
      "coluna": "Status Envio",
-     "sql": "status_envio"
+     "sql": "status_envio",
+     "tipo": "texto"
     }
    ]
   },
@@ -595,54 +778,66 @@
    "colunas": [
     {
      "coluna": "ID Aplicação Área",
-     "sql": "id_aplicacao_area"
+     "sql": "id_aplicacao_area",
+     "tipo": "id"
     },
     {
      "coluna": "ID Aplicacao",
      "sql": "id_aplicacao",
+     "tipo": "id",
      "ref": "aplicacoes"
     },
     {
      "coluna": "ID Área",
      "sql": "id_area",
+     "tipo": "id",
      "ref": "areas"
     },
     {
      "coluna": "Fazenda (snapshot)",
-     "sql": "fazenda"
+     "sql": "fazenda",
+     "tipo": "texto"
     },
     {
      "coluna": "Área (snapshot)",
-     "sql": "area_nome"
+     "sql": "area_nome",
+     "tipo": "texto"
     },
     {
      "coluna": "Safra (snapshot)",
-     "sql": "safra"
+     "sql": "safra",
+     "tipo": "safra"
     },
     {
      "coluna": "Cultivar (snapshot)",
-     "sql": "cultivar"
+     "sql": "cultivar",
+     "tipo": "texto"
     },
     {
      "coluna": "ID Cultivo",
      "sql": "id_cultivo",
+     "tipo": "id",
      "ref": "safra_cultivos"
     },
     {
      "coluna": "Parte (snapshot)",
-     "sql": "parte"
+     "sql": "parte",
+     "tipo": "texto"
     },
     {
      "coluna": "Hectares Recomendados",
-     "sql": "hectares"
+     "sql": "hectares",
+     "tipo": "dec"
     },
     {
      "coluna": "Ordem",
-     "sql": "ordem"
+     "sql": "ordem",
+     "tipo": "int"
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     }
    ]
   },
@@ -653,69 +848,85 @@
    "colunas": [
     {
      "coluna": "ID Item",
-     "sql": "id_item"
+     "sql": "id_item",
+     "tipo": "id"
     },
     {
      "coluna": "ID Aplicacao",
      "sql": "id_aplicacao",
+     "tipo": "id",
      "ref": "aplicacoes"
     },
     {
      "coluna": "ID Produto",
      "sql": "id_produto",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "Nome Comercial Emitido",
-     "sql": "produto_nome"
+     "sql": "produto_nome",
+     "tipo": "texto"
     },
     {
      "coluna": "Grupo Emitido",
-     "sql": "grupo"
+     "sql": "grupo",
+     "tipo": "texto"
     },
     {
      "coluna": "Dose Recomendada",
-     "sql": "dose"
+     "sql": "dose",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Dose",
-     "sql": "unidade_dose"
+     "sql": "unidade_dose",
+     "tipo": "texto"
     },
     {
      "coluna": "Área de Referência (ha)",
-     "sql": "area_ref_ha"
+     "sql": "area_ref_ha",
+     "tipo": "dec"
     },
     {
      "coluna": "Quantidade Total Recomendada",
-     "sql": "quantidade"
+     "sql": "quantidade",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Quantidade",
-     "sql": "unidade_quantidade"
+     "sql": "unidade_quantidade",
+     "tipo": "texto"
     },
     {
      "coluna": "Alvo Específico",
-     "sql": "alvo_especifico"
+     "sql": "alvo_especifico",
+     "tipo": "texto"
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Conferência",
-     "sql": "conferencia"
+     "sql": "conferencia",
+     "tipo": "texto"
     },
     {
      "coluna": "Quantidade Efetiva Consolidada",
-     "sql": "quantidade_efetiva"
+     "sql": "quantidade_efetiva",
+     "tipo": "dec"
     },
     {
      "coluna": "Status Item",
-     "sql": "status_item"
+     "sql": "status_item",
+     "tipo": "texto"
     },
     {
      "coluna": "Escopo Área",
-     "sql": "escopo_area"
+     "sql": "escopo_area",
+     "tipo": "texto"
     }
    ]
   },
@@ -726,87 +937,113 @@
    "colunas": [
     {
      "coluna": "ID Saída",
-     "sql": "id_saida"
+     "sql": "id_saida",
+     "tipo": "id"
     },
     {
      "coluna": "ID Aplicação",
      "sql": "id_aplicacao",
+     "tipo": "id",
      "ref": "aplicacoes"
     },
     {
      "coluna": "Número Aplicação",
-     "sql": "numero"
+     "sql": "numero",
+     "tipo": "int"
     },
     {
      "coluna": "Código Saída",
-     "sql": "codigo"
+     "sql": "codigo",
+     "tipo": "texto"
     },
     {
      "coluna": "ID Item",
      "sql": "id_item",
+     "tipo": "id",
      "ref": "aplicacao_itens"
     },
     {
      "coluna": "ID Área",
      "sql": "id_area",
+     "tipo": "id",
      "ref": "areas"
     },
     {
      "coluna": "Fazenda (snapshot)",
-     "sql": "fazenda"
+     "sql": "fazenda",
+     "tipo": "texto"
     },
     {
      "coluna": "Área (snapshot)",
-     "sql": "area_nome"
+     "sql": "area_nome",
+     "tipo": "texto"
     },
     {
      "coluna": "ID Produto",
      "sql": "id_produto",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "Produto (snapshot)",
-     "sql": "produto_nome"
+     "sql": "produto_nome",
+     "tipo": "texto"
     },
     {
      "coluna": "Grupo (snapshot)",
-     "sql": "grupo"
+     "sql": "grupo",
+     "tipo": "texto"
     },
     {
      "coluna": "Dose Recomendada",
-     "sql": "dose"
+     "sql": "dose",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Dose",
-     "sql": "unidade_dose"
+     "sql": "unidade_dose",
+     "tipo": "texto"
     },
     {
      "coluna": "Hectares",
-     "sql": "hectares"
+     "sql": "hectares",
+     "tipo": "dec"
     },
     {
      "coluna": "Quantidade Recomendada",
-     "sql": "quantidade"
+     "sql": "quantidade",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Quantidade",
-     "sql": "unidade_quantidade"
+     "sql": "unidade_quantidade",
+     "tipo": "texto"
     },
     {
      "coluna": "Ordem",
-     "sql": "ordem"
+     "sql": "ordem",
+     "tipo": "int"
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Situação",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Recomendada",
+      "Parcialmente executada",
+      "Executada",
+      "Cancelada"
+     ]
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -817,100 +1054,127 @@
    "colunas": [
     {
      "coluna": "ID Execução",
-     "sql": "id_execucao"
+     "sql": "id_execucao",
+     "tipo": "id"
     },
     {
      "coluna": "ID Etapa",
-     "sql": "id_etapa"
+     "sql": "id_etapa",
+     "tipo": "id"
     },
     {
      "coluna": "ID Aplicação",
      "sql": "id_aplicacao",
+     "tipo": "id",
      "ref": "aplicacoes"
     },
     {
      "coluna": "Número Aplicação",
-     "sql": "numero"
+     "sql": "numero",
+     "tipo": "int"
     },
     {
      "coluna": "ID Área",
      "sql": "id_area",
+     "tipo": "id",
      "ref": "areas"
     },
     {
      "coluna": "Nome Área Emitido",
-     "sql": "area_nome"
+     "sql": "area_nome",
+     "tipo": "texto"
     },
     {
      "coluna": "ID Item",
      "sql": "id_item",
+     "tipo": "id",
      "ref": "aplicacao_itens"
     },
     {
      "coluna": "ID Produto",
      "sql": "id_produto",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "Nome Produto Emitido",
-     "sql": "produto_nome"
+     "sql": "produto_nome",
+     "tipo": "texto"
     },
     {
      "coluna": "Dose Recomendada",
-     "sql": "dose"
+     "sql": "dose",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Dose",
-     "sql": "unidade_dose"
+     "sql": "unidade_dose",
+     "tipo": "texto"
     },
     {
      "coluna": "Hectares Previstos",
-     "sql": "hectares_previstos"
+     "sql": "hectares_previstos",
+     "tipo": "dec"
     },
     {
      "coluna": "Hectares Tratados nesta Etapa",
-     "sql": "hectares_tratados"
+     "sql": "hectares_tratados",
+     "tipo": "dec"
     },
     {
      "coluna": "Quantidade Recomendada para Área",
-     "sql": "quantidade_recomendada"
+     "sql": "quantidade_recomendada",
+     "tipo": "dec"
     },
     {
      "coluna": "Quantidade Efetiva nesta Etapa",
-     "sql": "quantidade_efetiva"
+     "sql": "quantidade_efetiva",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Quantidade",
-     "sql": "unidade_quantidade"
+     "sql": "unidade_quantidade",
+     "tipo": "texto"
     },
     {
      "coluna": "Data Efetiva",
-     "sql": "data_efetiva"
+     "sql": "data_efetiva",
+     "tipo": "data"
     },
     {
      "coluna": "Responsável",
-     "sql": "responsavel"
+     "sql": "responsavel",
+     "tipo": "texto"
     },
     {
      "coluna": "Conferência",
-     "sql": "conferencia"
+     "sql": "conferencia",
+     "tipo": "texto"
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Situação Execução",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Pendente",
+      "Confirmada"
+     ]
     },
     {
      "coluna": "ID Movimentação Estoque",
      "sql": "id_movimentacao",
+     "tipo": "id",
      "ref": "mov_estoque"
     },
     {
      "coluna": "Confirmado em",
-     "sql": "confirmado_em"
+     "sql": "confirmado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -921,49 +1185,64 @@
    "colunas": [
     {
      "coluna": "ID Tratamento",
-     "sql": "id_tratamento"
+     "sql": "id_tratamento",
+     "tipo": "id"
     },
     {
      "coluna": "Data",
-     "sql": "data"
+     "sql": "data",
+     "tipo": "data"
     },
     {
      "coluna": "ID Semente Tratada",
      "sql": "id_semente_tratada",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "ID Semente Base",
      "sql": "id_semente_base",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "Quantidade",
-     "sql": "quantidade"
+     "sql": "quantidade",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade",
-     "sql": "unidade"
+     "sql": "unidade",
+     "tipo": "texto"
     },
     {
      "coluna": "Responsável",
-     "sql": "responsavel"
+     "sql": "responsavel",
+     "tipo": "texto"
     },
     {
      "coluna": "Situação",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Confirmado",
+      "Estornado"
+     ]
     },
     {
      "coluna": "Motivo Estorno",
-     "sql": "motivo_estorno"
+     "sql": "motivo_estorno",
+     "tipo": "texto"
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     },
     {
      "coluna": "Atualizado em",
-     "sql": "atualizado_em"
+     "sql": "atualizado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -974,89 +1253,123 @@
    "colunas": [
     {
      "coluna": "ID Movimentação",
-     "sql": "id_movimentacao"
+     "sql": "id_movimentacao",
+     "tipo": "id"
     },
     {
      "coluna": "Data",
-     "sql": "data"
+     "sql": "data",
+     "tipo": "data"
     },
     {
      "coluna": "ID Produto",
      "sql": "id_produto",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "Produto",
-     "sql": "produto_nome"
+     "sql": "produto_nome",
+     "tipo": "texto"
     },
     {
      "coluna": "Quantidade",
-     "sql": "quantidade"
+     "sql": "quantidade",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Base",
-     "sql": "unidade_base"
+     "sql": "unidade_base",
+     "tipo": "texto",
+     "unidade": true
     },
     {
      "coluna": "Tipo Movimentação",
-     "sql": "tipo"
+     "sql": "tipo",
+     "tipo": "enum",
+     "dominio": [
+      "Entrada",
+      "Ajuste positivo",
+      "Ajuste negativo",
+      "Saida por aplicacao",
+      "Estorno ou reversao",
+      "Saida por tratamento",
+      "Entrada por tratamento"
+     ]
     },
     {
      "coluna": "Documento de Origem",
-     "sql": "documento"
+     "sql": "documento",
+     "tipo": "texto"
     },
     {
      "coluna": "ID Aplicação",
      "sql": "id_aplicacao",
+     "tipo": "id",
      "ref": "aplicacoes"
     },
     {
      "coluna": "ID Área",
      "sql": "id_area",
+     "tipo": "id",
      "ref": "areas"
     },
     {
      "coluna": "ID Execução",
      "sql": "id_execucao",
+     "tipo": "id",
      "ref": "execucao_itens"
     },
     {
      "coluna": "ID Movimentação Revertida",
      "sql": "id_movimentacao_revertida",
+     "tipo": "id",
      "ref": "mov_estoque"
     },
     {
      "coluna": "ID Tratamento",
      "sql": "id_tratamento",
+     "tipo": "id",
      "ref": "tratamentos"
     },
     {
      "coluna": "Responsável",
-     "sql": "responsavel"
+     "sql": "responsavel",
+     "tipo": "texto"
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Quantidade Base Assinada",
-     "sql": "quantidade_assinada"
+     "sql": "quantidade_assinada",
+     "tipo": "dec"
     },
     {
      "coluna": "Situação",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Pendente",
+      "Confirmada"
+     ]
     },
     {
      "coluna": "Autorização Saldo Negativo",
-     "sql": "autoriza_negativo"
+     "sql": "autoriza_negativo",
+     "tipo": "texto"
     },
     {
      "coluna": "Motivo Autorização",
-     "sql": "motivo_autorizacao"
+     "sql": "motivo_autorizacao",
+     "tipo": "texto"
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -1067,127 +1380,165 @@
    "colunas": [
     {
      "coluna": "ID Registro Histórico",
-     "sql": "id_historico"
+     "sql": "id_historico",
+     "tipo": "id"
     },
     {
      "coluna": "ID Aplicação",
      "sql": "id_aplicacao",
+     "tipo": "id",
      "ref": "aplicacoes"
     },
     {
      "coluna": "Número Aplicação",
-     "sql": "numero"
+     "sql": "numero",
+     "tipo": "int"
     },
     {
      "coluna": "Fazenda",
-     "sql": "fazenda"
+     "sql": "fazenda",
+     "tipo": "texto"
     },
     {
      "coluna": "Safra",
-     "sql": "safra"
+     "sql": "safra",
+     "tipo": "safra"
     },
     {
      "coluna": "Cultivar",
-     "sql": "cultivar"
+     "sql": "cultivar",
+     "tipo": "texto"
     },
     {
      "coluna": "ID Área",
      "sql": "id_area",
+     "tipo": "id",
      "ref": "areas"
     },
     {
      "coluna": "Área",
-     "sql": "area_nome"
+     "sql": "area_nome",
+     "tipo": "texto"
     },
     {
      "coluna": "ID Cultivo",
      "sql": "id_cultivo",
+     "tipo": "id",
      "ref": "safra_cultivos"
     },
     {
      "coluna": "Parte",
-     "sql": "parte"
+     "sql": "parte",
+     "tipo": "texto"
     },
     {
      "coluna": "Hectares Previstos",
-     "sql": "hectares_previstos"
+     "sql": "hectares_previstos",
+     "tipo": "dec"
     },
     {
      "coluna": "Hectares Efetivamente Tratados",
-     "sql": "hectares_tratados"
+     "sql": "hectares_tratados",
+     "tipo": "dec"
     },
     {
      "coluna": "ID Produto",
      "sql": "id_produto",
+     "tipo": "id",
      "ref": "produtos"
     },
     {
      "coluna": "Produto",
-     "sql": "produto_nome"
+     "sql": "produto_nome",
+     "tipo": "texto"
     },
     {
      "coluna": "Tipo Produto",
-     "sql": "tipo_produto"
+     "sql": "tipo_produto",
+     "tipo": "enum",
+     "dominio": [
+      "Insumo",
+      "Semente"
+     ]
     },
     {
      "coluna": "Grupo",
-     "sql": "grupo"
+     "sql": "grupo",
+     "tipo": "texto"
     },
     {
      "coluna": "Dose Recomendada por ha",
-     "sql": "dose"
+     "sql": "dose",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Dose",
-     "sql": "unidade_dose"
+     "sql": "unidade_dose",
+     "tipo": "texto"
     },
     {
      "coluna": "Quantidade Recomendada para Área",
-     "sql": "quantidade_recomendada"
+     "sql": "quantidade_recomendada",
+     "tipo": "dec"
     },
     {
      "coluna": "Quantidade Efetivamente Utilizada",
-     "sql": "quantidade_efetiva"
+     "sql": "quantidade_efetiva",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Quantidade Efetiva",
-     "sql": "unidade_quantidade"
+     "sql": "unidade_quantidade",
+     "tipo": "texto"
     },
     {
      "coluna": "Data Recomendação",
-     "sql": "data_recomendacao"
+     "sql": "data_recomendacao",
+     "tipo": "data"
     },
     {
      "coluna": "Data Efetiva Aplicação",
-     "sql": "data_efetiva"
+     "sql": "data_efetiva",
+     "tipo": "data"
     },
     {
      "coluna": "Mês Aplicação",
-     "sql": "mes"
+     "sql": "mes",
+     "tipo": "texto"
     },
     {
      "coluna": "Alvo",
-     "sql": "alvo"
+     "sql": "alvo",
+     "tipo": "texto"
     },
     {
      "coluna": "Observações",
-     "sql": "observacoes"
+     "sql": "observacoes",
+     "tipo": "texto"
     },
     {
      "coluna": "Conferência",
-     "sql": "conferencia"
+     "sql": "conferencia",
+     "tipo": "texto"
     },
     {
      "coluna": "Responsável",
-     "sql": "responsavel"
+     "sql": "responsavel",
+     "tipo": "texto"
     },
     {
      "coluna": "Situação",
-     "sql": "situacao"
+     "sql": "situacao",
+     "tipo": "enum",
+     "dominio": [
+      "Parcialmente executada",
+      "Executada"
+     ]
     },
     {
      "coluna": "ID Execução de Origem",
      "sql": "id_execucao_origem",
+     "tipo": "id",
      "ref": "execucao_itens"
     }
    ]
@@ -1199,43 +1550,53 @@
    "colunas": [
     {
      "coluna": "ID Evento",
-     "sql": "id_evento"
+     "sql": "id_evento",
+     "tipo": "id"
     },
     {
      "coluna": "Data e Hora",
-     "sql": "quando"
+     "sql": "quando",
+     "tipo": "datahora"
     },
     {
      "coluna": "Usuário/Responsável",
-     "sql": "usuario"
+     "sql": "usuario",
+     "tipo": "texto"
     },
     {
      "coluna": "Tipo Operação",
-     "sql": "operacao"
+     "sql": "operacao",
+     "tipo": "texto"
     },
     {
      "coluna": "Entidade Afetada",
-     "sql": "entidade"
+     "sql": "entidade",
+     "tipo": "texto"
     },
     {
      "coluna": "ID Registro",
-     "sql": "id_registro"
+     "sql": "id_registro",
+     "tipo": "texto"
     },
     {
      "coluna": "Valores Anteriores",
-     "sql": "antes"
+     "sql": "antes",
+     "tipo": "texto"
     },
     {
      "coluna": "Valores Posteriores",
-     "sql": "depois"
+     "sql": "depois",
+     "tipo": "texto"
     },
     {
      "coluna": "Motivo",
-     "sql": "motivo"
+     "sql": "motivo",
+     "tipo": "texto"
     },
     {
      "coluna": "Resultado",
-     "sql": "resultado"
+     "sql": "resultado",
+     "tipo": "texto"
     }
    ]
   },
@@ -1246,42 +1607,51 @@
    "colunas": [
     {
      "coluna": "ID Exceção",
-     "sql": "id_excecao"
+     "sql": "id_excecao",
+     "tipo": "id"
     },
     {
      "coluna": "ID Aplicação",
      "sql": "id_aplicacao",
+     "tipo": "id",
      "ref": "aplicacoes"
     },
     {
      "coluna": "ID Item",
      "sql": "id_item",
+     "tipo": "id",
      "ref": "aplicacao_itens"
     },
     {
      "coluna": "ID Área",
      "sql": "id_area",
+     "tipo": "id",
      "ref": "areas"
     },
     {
      "coluna": "Dose Aplicável",
-     "sql": "dose"
+     "sql": "dose",
+     "tipo": "dec"
     },
     {
      "coluna": "Unidade Dose",
-     "sql": "unidade_dose"
+     "sql": "unidade_dose",
+     "tipo": "texto"
     },
     {
      "coluna": "Motivo",
-     "sql": "motivo"
+     "sql": "motivo",
+     "tipo": "texto"
     },
     {
      "coluna": "Criado por",
-     "sql": "criado_por"
+     "sql": "criado_por",
+     "tipo": "texto"
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     }
    ]
   },
@@ -1292,23 +1662,28 @@
    "colunas": [
     {
      "coluna": "ID Termo",
-     "sql": "id_termo"
+     "sql": "id_termo",
+     "tipo": "id"
     },
     {
      "coluna": "Termo",
-     "sql": "termo"
+     "sql": "termo",
+     "tipo": "texto"
     },
     {
      "coluna": "Explicação",
-     "sql": "explicacao"
+     "sql": "explicacao",
+     "tipo": "texto"
     },
     {
      "coluna": "Onde Aparece",
-     "sql": "onde"
+     "sql": "onde",
+     "tipo": "texto"
     },
     {
      "coluna": "Criado em",
-     "sql": "criado_em"
+     "sql": "criado_em",
+     "tipo": "datahora"
     }
    ]
   }

@@ -2,7 +2,7 @@
 // 1) login Google  2) ler/gravar arquivo numa pasta do Google Drive
 // 3) banco SQLite local no aparelho, com envio e recebimento via Drive.
 (function () {
-  const VERSAO_APP = '0.0.6'; // mudar junto com index.html, config.js e sw.js
+  const VERSAO_APP = '0.0.7'; // mudar junto com index.html, config.js e sw.js
   const cfg = window.APP_CONFIG;
   const $ = (id) => document.getElementById(id);
 
@@ -281,20 +281,92 @@
   }
   $('btnImportarXlsm').onclick = () => $('arquivoXlsm').click();
   let leitura = null; // ultima planilha lida (para "importar o que for valido" sem ler de novo)
-  async function importarXlsm(parcial) {
+  // CORRIGIR em vez de so recusar: cada problema ganha um campo (ou lista) para o valor certo; a planilha original nao muda.
+  // As correcoes ficam em leitura.correcoes (chave "tabela|linha|coluna") e vao junto na proxima tentativa; o worker as grava na auditoria.
+  function blocoCorrecoes(lista, aoAplicar) {
+    const itens = lista.filter((x) => x.ts && x.col);
+    if (!itens.length) return;
+    const box = el('div', undefined, 'margin:10px 0;border-top:1px solid var(--borda);padding-top:8px');
+    box.appendChild(el('p', 'Corrigir aqui (a planilha original nao muda; cada correcao fica na auditoria):', 'margin:0 0 6px;font-weight:600'));
+    const campos = [];
+    itens.slice(0, 30).forEach((x) => {
+      const card = el('div', undefined, 'border:1px solid var(--borda);border-radius:10px;padding:8px;margin:0 0 6px;font-size:13px');
+      card.appendChild(el('div', (NOME_TABELA[x.ts] || x.ts) + ', linha ' + x.linha + ' do Excel, ' + x.colNome + ': ' + x.msg, 'margin:0 0 4px;word-break:break-word'));
+      let ent;
+      if (x.opcoes && x.opcoes.length) {
+        ent = document.createElement('select'); ent.appendChild(new Option('escolha o valor certo...', ''));
+        x.opcoes.forEach((o) => ent.appendChild(new Option(o, o)));
+      } else { ent = document.createElement('input'); ent.type = 'text'; ent.placeholder = 'valor certo'; ent.value = x.valor === null || x.valor === undefined ? '' : String(x.valor); }
+      ent.style.cssText = 'max-width:100%;margin-right:8px';
+      card.appendChild(ent);
+      let dif = null;
+      if (x.kind === 'parecido') {
+        const lab = el('label', undefined, 'display:block;margin-top:6px');
+        dif = document.createElement('input'); dif.type = 'checkbox'; dif.style.marginRight = '6px';
+        lab.appendChild(dif); lab.appendChild(document.createTextNode('Sao produtos DIFERENTES: importar tambem este, com o nome como esta'));
+        card.appendChild(lab);
+      }
+      campos.push({ x, ent, dif });
+      box.appendChild(card);
+    });
+    if (itens.length > 30) box.appendChild(el('p', '... e mais ' + (itens.length - 30) + ' problema(s); corrija estes e tente de novo.', 'color:var(--mut);font-size:13px'));
+    const b = el('button', 'Aplicar correcoes e tentar de novo');
+    b.onclick = () => tarefa(b, 'Conferindo...', async () => {
+      leitura.correcoes = leitura.correcoes || {};
+      let n = 0;
+      campos.forEach(({ x, ent, dif }) => {
+        const k = x.ts + '|' + x.linha + '|' + x.col, v = String(ent.value).trim(), antes = x.valor === null || x.valor === undefined ? '' : String(x.valor).trim();
+        if (dif && dif.checked) { leitura.correcoes[k] = { diferente: true }; n++; }
+        else if (v !== '' && v !== antes) { leitura.correcoes[k] = { valor: v }; n++; }
+      });
+      if (!n) { log('Nenhuma correcao digitada.', 'erro'); return; }
+      await aoAplicar();
+    });
+    box.appendChild(b);
+    $('relatorio').appendChild(box);
+  }
+  const avisosTxt = (av) => (av && av.length ? ['AVISO: ' + av.length + ' numero(s) digitado(s) com virgula foram convertidos:'].concat(av.map((x) => x.tabela + ' (linha ' + x.linha + ' do Excel), ' + x.msg)) : []);
+  // Simulacao do descarte (I2): mostra o que sairia (direto + dependentes + produtos com movimento) ANTES de gravar
+  function mostrarSimulacao(r, aplicar) {
+    const dep = (x) => /aponta para um registro/.test(x.msg);
+    const diretos = r.descartes.filter((x) => !dep(x));
+    const nDep = Object.values(r.cascata || {}).reduce((s, n) => s + n, 0);
+    const txt = ['SIMULACAO: nada foi gravado ainda. Se voce confirmar, sai o seguinte:',
+      diretos.length + ' registro(s) com problema (nao entram):']
+      .concat(diretos.slice(0, 15).map((x) => x.tabela + (x.linha ? ' (linha ' + x.linha + ' do Excel)' : '') + ': ' + x.msg));
+    if (diretos.length > 15) txt.push('... e mais ' + (diretos.length - 15));
+    txt.push(nDep + ' linha(s) dependente(s) tambem saem' + (nDep ? ': ' + Object.entries(r.cascata).map(([k, n]) => (NOME_TABELA[k] || k) + ' ' + n).join(', ') : '.'));
+    if (r.produtosComMov.length) {
+      txt.push('ATENCAO: ' + r.produtosComMov.length + ' produto(s) com movimento de estoque seriam descartados, com o historico deles:');
+      r.produtosComMov.forEach((p) => txt.push((p.nome || p.id) + ': ' + p.movimentos + ' movimento(s) de estoque'));
+    }
+    avisosTxt(r.avisos).forEach((x) => txt.push(x));
+    mostrarRelatorio(txt, r.produtosComMov.length ? 'erro' : undefined);
+    const b = el('button', r.produtosComMov.length ? 'Confirmar: descartar tambem os produtos com movimento' : 'Confirmar e continuar');
+    b.onclick = () => tarefa(b, 'Gravando...', async () => {
+      const aviso = r.produtosComMov.length
+        ? 'Os produtos com movimento de estoque serao APAGADOS junto com o historico deles (' + r.produtosComMov.map((p) => p.nome || p.id).join(', ') + '). Tem certeza?'
+        : 'Os registros acima serao DESCARTADOS e o banco do aparelho sera alterado. Continuar?';
+      if (!confirm(aviso)) return;
+      await aplicar(r.produtosComMov.length > 0);
+    });
+    const c = el('button', 'Cancelar (nao altera nada)'); c.className = 'sec'; c.onclick = () => chamar('cancelarComparacao').then(() => mostrarRelatorio(['Cancelado. Nada foi alterado.']));
+    $('relatorio').appendChild(b); $('relatorio').appendChild(c);
+  }
+  async function importarXlsm(parcial, opc) {
+    opc = opc || {};
     const esquema = await (await fetch('./esquema.json', { cache: 'no-store' })).json();
     const sql = await (await fetch('./esquema.sql', { cache: 'no-store' })).text();
-    const r = await chamar('xlsm', { dados: leitura.dados, esquema, sql, parcial, arquivo: leitura.nome, usuario: rotuloConta || 'app web' });
+    const r = await chamar('xlsm', { dados: leitura.dados, esquema, sql, parcial, arquivo: leitura.nome, usuario: rotuloConta || 'app web', simular: !!opc.simular, confirmaProdutos: !!opc.confirmaProdutos, correcoes: leitura.correcoes || {} });
+    if (r.simulacao) { mostrarSimulacao(r, (conf) => importarXlsm(true, { confirmaProdutos: conf })); return; }
     if (!r.sucesso) {
       mostrarRelatorio(['NADA foi importado; o banco anterior foi mantido. Problemas encontrados:']
         .concat(r.erros.map((x) => x.tabela + (x.linha ? ' (linha ' + x.linha + ' do Excel)' : '') + ': ' + x.msg)), 'erro');
+      blocoCorrecoes(r.erros, () => importarXlsm(false));
       if (r.erros.every((x) => x.tipo === 'dado')) {
         const b = document.createElement('button'); b.className = 'sec';
-        b.textContent = 'Importar so o que for valido (descarta os registros acima)';
-        b.onclick = () => tarefa(b, 'Importando...', async () => {
-          if (!confirm('Os registros com problema serao DESCARTADOS (ficam listados no relatorio) e o banco do aparelho sera substituido. Continuar?')) return;
-          await importarXlsm(true);
-        });
+        b.textContent = 'Importar so o que for valido (mostra antes o que seria descartado)';
+        b.onclick = () => tarefa(b, 'Simulando...', () => importarXlsm(true, { simular: true }));
         $('relatorio').appendChild(b);
       }
       log('Importacao recusada: ' + r.erros.length + ' problema(s). Veja o relatorio.', 'erro');
@@ -308,6 +380,7 @@
       txt.push('DESCARTADOS (' + r.descartes.length + '), nao entraram no banco:');
       r.descartes.forEach((x) => txt.push(x.tabela + (x.linha ? ' (linha ' + x.linha + ' do Excel)' : '') + ': ' + x.msg));
     }
+    avisosTxt(r.avisos).forEach((x) => txt.push(x));
     mostrarRelatorio(txt);
     log('Planilha "' + leitura.nome + '" importada' + (r.descartes && r.descartes.length ? ' (' + r.descartes.length + ' descartados).' : '.'), 'ok');
   }
@@ -328,7 +401,7 @@
   async function atualizarComPlanilha() {
     const esquema = await (await fetch('./esquema.json', { cache: 'no-store' })).json();
     const sql = await (await fetch('./esquema.sql', { cache: 'no-store' })).text();
-    const r = await chamar('comparar', { dados: leitura.dados, esquema, sql });
+    const r = await chamar('comparar', { dados: leitura.dados, esquema, sql, correcoes: leitura.correcoes || {} });
     const R = $('relatorio'); R.innerHTML = '';
     if (!r.sucesso) {
       mostrarRelatorio(['Nada foi alterado. Esta planilha nao serve para atualizar:'].concat(r.erros.map((x) => x.tabela + ': ' + x.msg)), 'erro');
@@ -342,7 +415,11 @@
       + (t.conflitos ? ', ' + t.conflitos + ' duplicado(s)' : '') + (t.bloqueados ? ', ' + t.bloqueados + ' bloqueado(s)' : '') + (t.invalidas ? ', ' + t.invalidas + ' invalido(s)' : ''))));
     if (lin.length) R.appendChild(ul);
     if (r.bloqueados.length) R.appendChild(el('p', 'Nao serao importados, e o que depende deles tambem nao (valor que deve ser unico ja existe, ex.: numero de ficha repetido): ' + r.bloqueados.slice(0, 5).join('; ') + (r.bloqueados.length > 5 ? '...' : ''), 'color:var(--err);font-size:13px;margin:0 0 8px'));
-    if (r.invalidas.length) R.appendChild(el('p', r.invalidas.length + ' linha(s) da planilha tem dado invalido e serao ignoradas (ex.: ' + r.invalidas[0].tabela + ', linha ' + r.invalidas[0].linha + ').', 'color:var(--err);font-size:13px;margin:0 0 8px'));
+    if (r.invalidas.length) {
+      R.appendChild(el('p', r.invalidas.length + ' linha(s) da planilha tem dado invalido e serao ignoradas (a menos que voce corrija abaixo):', 'color:var(--err);font-size:13px;margin:0 0 2px'));
+      blocoCorrecoes(r.invalidas, () => atualizarComPlanilha());
+    }
+    avisosTxt(r.avisos).forEach((x) => R.appendChild(el('p', x, 'font-size:13px;margin:0 0 2px;color:var(--mut)')));
     const escolhas = {};
     let atualizaOk = () => {};
     const pad4 = (n) => String(n).padStart(4, '0');
@@ -357,7 +434,7 @@
       const opcoes = ficha
         ? [['descartar', 'Descartar', 'a ficha da planilha nao entra, nem o que depende dela (itens, execucoes e movimentos de estoque). Fica registrado na auditoria.'],
           ['renumerar', 'Renumerar', 'a ficha da planilha entra como n. ' + pad4(c.novoNumero) + '. Fica registrado na propria ficha (observacoes) e na auditoria.']]
-        : [['app', 'Manter o do app', c.app.texto], ['planilha', 'Usar o da planilha', c.nova.texto]];
+        : [['app', 'Manter o do app', c.app.texto], ['planilha', 'Usar o da planilha', c.nova.texto]].concat(c.podeNovo ? [['novo', 'Importar como produto DIFERENTE', 'entra como mais um cadastro, com o nome da planilha (' + c.rotulo + '), ao lado de ' + c.rotuloApp + ' do app']] : []);
       opcoes.forEach(([val, rot, txt]) => {
         const lab = el('label', undefined, 'display:block;margin:4px 0;line-height:1.35');
         const rd = document.createElement('input'); rd.type = 'radio'; rd.name = grupo; rd.value = val; rd.checked = c.sugestao === val; rd.style.marginRight = '6px';
@@ -369,13 +446,17 @@
       R.appendChild(card);
     });
     const fim = (c) => chamar('cancelarComparacao').then(() => { if (c) mostrarRelatorio(['Atualizacao cancelada. Nada foi alterado.']); });
-    async function aplicar(parcial) {
-      const m = await chamar('mesclar', { decisoes: escolhas, parcial, arquivo: leitura.nome, usuario: rotuloConta || 'app web' });
+    async function aplicar(parcial, opc) {
+      opc = opc || {};
+      const m = await chamar('mesclar', { decisoes: escolhas, parcial, arquivo: leitura.nome, usuario: rotuloConta || 'app web', simular: !!opc.simular, confirmaProdutos: !!opc.confirmaProdutos });
+      if (m.simulacao) { mostrarSimulacao(m, (conf) => aplicar(true, { confirmaProdutos: conf })); return; }
       if (!m.sucesso) {
         mostrarRelatorio(['NADA foi alterado; o banco anterior foi mantido. Problemas encontrados:'].concat(m.erros.map((x) => x.tabela + ': ' + x.msg)), 'erro');
-        const b = el('button', 'Atualizar so com o que for valido (descarta os registros acima)'); b.className = 'sec';
-        b.onclick = () => tarefa(b, 'Atualizando...', async () => { if (confirm('Os registros com problema serao DESCARTADOS (listados no relatorio). Continuar?')) await aplicar(true); });
-        $('relatorio').appendChild(b);
+        if (m.erros.every((x) => x.tipo === 'dado')) {
+          const b = el('button', 'Atualizar so com o que for valido (mostra antes o que seria descartado)'); b.className = 'sec';
+          b.onclick = () => tarefa(b, 'Simulando...', () => aplicar(true, { simular: true }));
+          $('relatorio').appendChild(b);
+        }
         log('Atualizacao recusada: ' + m.erros.length + ' problema(s).', 'erro'); return;
       }
       mostrarTabelas(m.tabelas);

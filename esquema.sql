@@ -3,18 +3,18 @@
 CREATE TABLE areas ( -- Cadastro mestre de areas (talhoes). Hectares novos nao alteram snapshots
   id_area TEXT NOT NULL PRIMARY KEY,
   fazenda TEXT NOT NULL,
-  nome TEXT NOT NULL UNIQUE,
+  nome TEXT NOT NULL UNIQUE COLLATE NOCASE,
   hectares REAL NOT NULL CHECK (hectares > 0),
   cultivar TEXT,
   situacao TEXT NOT NULL CHECK (situacao IN ('Ativa','Inativa')),
   observacoes TEXT,
   criado_em TEXT NOT NULL,
   atualizado_em TEXT NOT NULL
-);
+) STRICT;
 
 CREATE TABLE produtos ( -- Cadastro mestre de produtos e saldo inicial. Saldo, Grupo e Principios sao derivados
   id_produto TEXT NOT NULL PRIMARY KEY,
-  nome TEXT NOT NULL UNIQUE,
+  nome TEXT NOT NULL UNIQUE COLLATE NOCASE,
   tipo TEXT NOT NULL CHECK (tipo IN ('Insumo','Semente')),
   grupo TEXT,
   principios_ativos TEXT,
@@ -26,7 +26,7 @@ CREATE TABLE produtos ( -- Cadastro mestre de produtos e saldo inicial. Saldo, G
   saldo_atual REAL NOT NULL,
   criado_em TEXT NOT NULL,
   atualizado_em TEXT NOT NULL
-);
+) STRICT;
 
 CREATE TABLE safras ( -- Safra por area (ciclo AAAA-N). Uma Aberta por area. A area nao guarda safra: a relacao fica so aqui
   id_safra TEXT NOT NULL PRIMARY KEY,
@@ -39,19 +39,19 @@ CREATE TABLE safras ( -- Safra por area (ciclo AAAA-N). Uma Aberta por area. A a
   criado_em TEXT,
   atualizado_em TEXT,
   FOREIGN KEY (id_area) REFERENCES areas(id_area) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE grupos ( -- Grupos de produto (lista para selecao)
   id_grupo TEXT NOT NULL PRIMARY KEY,
-  nome TEXT NOT NULL UNIQUE,
+  nome TEXT NOT NULL UNIQUE COLLATE NOCASE,
   criado_em TEXT
-);
+) STRICT;
 
 CREATE TABLE principios_ativos ( -- Principios ativos (lista para selecao)
   id_principio TEXT NOT NULL PRIMARY KEY,
-  nome TEXT NOT NULL UNIQUE,
+  nome TEXT NOT NULL UNIQUE COLLATE NOCASE,
   criado_em TEXT
-);
+) STRICT;
 
 CREATE TABLE produto_grupos ( -- Produto x grupo (N:N). Chave = par
   id_produto TEXT NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE produto_grupos ( -- Produto x grupo (N:N). Chave = par
   PRIMARY KEY (id_produto, id_grupo),
   FOREIGN KEY (id_produto) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_grupo) REFERENCES grupos(id_grupo) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE produto_principios ( -- Produto x principio ativo (N:N). Chave = par
   id_produto TEXT NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE produto_principios ( -- Produto x principio ativo (N:N). Chave = pa
   PRIMARY KEY (id_produto, id_principio),
   FOREIGN KEY (id_produto) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_principio) REFERENCES principios_ativos(id_principio) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE medidas ( -- Medidas (estoque e dose) e conversoes. Itens iniciais vem no modelo
   id_medida TEXT NOT NULL PRIMARY KEY,
@@ -82,14 +82,14 @@ CREATE TABLE medidas ( -- Medidas (estoque e dose) e conversoes. Itens iniciais 
   situacao TEXT NOT NULL CHECK (situacao IN ('Ativa','Inativa')),
   observacoes TEXT,
   criado_em TEXT NOT NULL
-);
+) STRICT;
 
 CREATE TABLE cultivares ( -- Catalogo de cultivares (Soja, Milho...). Itens iniciais vem no modelo. Era tbCulturas
   id_cultivar TEXT NOT NULL PRIMARY KEY,
-  cultivar TEXT NOT NULL UNIQUE,
+  cultivar TEXT NOT NULL UNIQUE COLLATE NOCASE,
   situacao TEXT NOT NULL CHECK (situacao IN ('Ativa','Inativa')),
   criado_em TEXT NOT NULL
-);
+) STRICT;
 
 CREATE TABLE codigos ( -- Catalogo de codigos de fabricante (ex.: XB970), cada um ligado a um cultivar. Era tbCultivares
   id_codigo TEXT NOT NULL PRIMARY KEY,
@@ -99,7 +99,7 @@ CREATE TABLE codigos ( -- Catalogo de codigos de fabricante (ex.: XB970), cada u
   situacao TEXT NOT NULL CHECK (situacao IN ('Ativa','Inativa')),
   criado_em TEXT NOT NULL,
   FOREIGN KEY (id_cultivar) REFERENCES cultivares(id_cultivar) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE sementes ( -- Dados do lote de cada produto Tipo Semente (1:1 com tbProdutos)
   id_semente TEXT NOT NULL PRIMARY KEY,
@@ -121,7 +121,7 @@ CREATE TABLE sementes ( -- Dados do lote de cada produto Tipo Semente (1:1 com t
   FOREIGN KEY (id_produto) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_codigo) REFERENCES codigos(id_codigo) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_semente_base) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE tratamento_itens ( -- Receita do tratamento: semente x componente com dose. Chave = par
   id_semente TEXT NOT NULL,
@@ -132,7 +132,7 @@ CREATE TABLE tratamento_itens ( -- Receita do tratamento: semente x componente c
   PRIMARY KEY (id_semente, id_componente),
   FOREIGN KEY (id_semente) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_componente) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE safra_cultivos ( -- Partes da area na safra: cultivar, variedade (semente), hectares, dose. tbSafras.Cultivar deriva daqui
   id_cultivo TEXT NOT NULL PRIMARY KEY,
@@ -150,7 +150,7 @@ CREATE TABLE safra_cultivos ( -- Partes da area na safra: cultivar, variedade (s
   FOREIGN KEY (id_safra) REFERENCES safras(id_safra) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_codigo) REFERENCES codigos(id_codigo) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_produto) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE aplicacoes ( -- Cabecalho da recomendacao. Numero visivel 1,2,3
   id_aplicacao TEXT NOT NULL PRIMARY KEY,
@@ -176,7 +176,7 @@ CREATE TABLE aplicacoes ( -- Cabecalho da recomendacao. Numero visivel 1,2,3
   atualizado_em TEXT NOT NULL,
   email_envio TEXT,
   status_envio TEXT
-);
+) STRICT;
 
 CREATE TABLE aplicacao_areas ( -- Area da ficha como estava no dia da emissao
   id_aplicacao_area TEXT NOT NULL PRIMARY KEY,
@@ -194,7 +194,7 @@ CREATE TABLE aplicacao_areas ( -- Area da ficha como estava no dia da emissao
   FOREIGN KEY (id_aplicacao) REFERENCES aplicacoes(id_aplicacao) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_area) REFERENCES areas(id_area) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_cultivo) REFERENCES safra_cultivos(id_cultivo) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE aplicacao_itens ( -- Produto e dose da ficha
   id_item TEXT NOT NULL PRIMARY KEY,
@@ -215,7 +215,7 @@ CREATE TABLE aplicacao_itens ( -- Produto e dose da ficha
   escopo_area TEXT,
   FOREIGN KEY (id_aplicacao) REFERENCES aplicacoes(id_aplicacao) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_produto) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE aplicacao_saidas ( -- Uma saida por produto x area. Codigo NNNN-SNN impresso no PDF
   id_saida TEXT NOT NULL PRIMARY KEY,
@@ -242,7 +242,7 @@ CREATE TABLE aplicacao_saidas ( -- Uma saida por produto x area. Codigo NNNN-SNN
   FOREIGN KEY (id_item) REFERENCES aplicacao_itens(id_item) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_area) REFERENCES areas(id_area) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_produto) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE execucao_itens ( -- Etapas de execucao confirmadas (baixam estoque)
   id_execucao TEXT NOT NULL PRIMARY KEY,
@@ -273,7 +273,7 @@ CREATE TABLE execucao_itens ( -- Etapas de execucao confirmadas (baixam estoque)
   FOREIGN KEY (id_item) REFERENCES aplicacao_itens(id_item) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_produto) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_movimentacao) REFERENCES mov_estoque(id_movimentacao) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE tratamentos ( -- Tratamento de semente on farm feito: baixa base e componentes, entra a tratada
   id_tratamento TEXT NOT NULL PRIMARY KEY,
@@ -289,7 +289,7 @@ CREATE TABLE tratamentos ( -- Tratamento de semente on farm feito: baixa base e 
   atualizado_em TEXT,
   FOREIGN KEY (id_semente_tratada) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_semente_base) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE mov_estoque ( -- Razao do estoque. Nunca apagar: estorno cria movimento inverso
   id_movimentacao TEXT NOT NULL PRIMARY KEY,
@@ -318,7 +318,7 @@ CREATE TABLE mov_estoque ( -- Razao do estoque. Nunca apagar: estorno cria movim
   FOREIGN KEY (id_execucao) REFERENCES execucao_itens(id_execucao) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_movimentacao_revertida) REFERENCES mov_estoque(id_movimentacao) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_tratamento) REFERENCES tratamentos(id_tratamento) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE historico_aplicacoes ( -- Consolidacao aplicacao x area x produto. Recriavel a partir da execucao
   id_historico TEXT NOT NULL PRIMARY KEY,
@@ -356,7 +356,7 @@ CREATE TABLE historico_aplicacoes ( -- Consolidacao aplicacao x area x produto. 
   FOREIGN KEY (id_cultivo) REFERENCES safra_cultivos(id_cultivo) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_produto) REFERENCES produtos(id_produto) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_execucao_origem) REFERENCES execucao_itens(id_execucao) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE auditoria ( -- Registro de eventos e erros. Somente inclusao
   id_evento TEXT NOT NULL PRIMARY KEY,
@@ -369,7 +369,7 @@ CREATE TABLE auditoria ( -- Registro de eventos e erros. Somente inclusao
   depois TEXT,
   motivo TEXT,
   resultado TEXT NOT NULL
-);
+) STRICT;
 
 CREATE TABLE dose_excecoes ( -- Dose excepcional por area. Nunca usada (uma area por ficha)
   id_excecao TEXT NOT NULL PRIMARY KEY,
@@ -384,7 +384,7 @@ CREATE TABLE dose_excecoes ( -- Dose excepcional por area. Nunca usada (uma area
   FOREIGN KEY (id_aplicacao) REFERENCES aplicacoes(id_aplicacao) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_item) REFERENCES aplicacao_itens(id_item) DEFERRABLE INITIALLY DEFERRED,
   FOREIGN KEY (id_area) REFERENCES areas(id_area) DEFERRABLE INITIALLY DEFERRED
-);
+) STRICT;
 
 CREATE TABLE glossario ( -- Glossario: termos, explicacoes e onde aparecem como dica. Itens iniciais de esquema/glossario.csv
   id_termo TEXT NOT NULL PRIMARY KEY,
@@ -392,7 +392,7 @@ CREATE TABLE glossario ( -- Glossario: termos, explicacoes e onde aparecem como 
   explicacao TEXT NOT NULL,
   onde TEXT,
   criado_em TEXT NOT NULL
-);
+) STRICT;
 
 CREATE UNIQUE INDEX uq_safra_aberta_por_area ON safras(id_area) WHERE situacao = 'Aberta';
 CREATE UNIQUE INDEX uq_safra_rotulo_por_area ON safras(id_area, safra);
