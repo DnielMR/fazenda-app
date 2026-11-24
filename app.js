@@ -2,8 +2,23 @@
 // 1) login Google  2) ler/gravar arquivo numa pasta do Google Drive
 // 3) banco SQLite local no aparelho, com envio e recebimento via Drive.
 (function () {
+  const VERSAO_APP = '0.0.1'; // mudar junto com index.html, config.js e sw.js
   const cfg = window.APP_CONFIG;
   const $ = (id) => document.getElementById(id);
+
+  // Mostra a versao de cada arquivo; se alguma nao subiu, aparece o aviso.
+  async function mostrarVersao() {
+    const tela = document.documentElement.dataset.versao || '?';
+    const conf = cfg.VERSAO || '?';
+    let cache = '?';
+    try { const ks = await caches.keys(); cache = ks.length ? ks.sort().slice(-1)[0] : 'sem cache'; } catch (e) { /* sem cache */ }
+    const todas = [tela, conf, VERSAO_APP, cache];
+    const iguais = todas.every((v) => v === VERSAO_APP);
+    $('versao').textContent = 'Versao ' + VERSAO_APP + ' (tela ' + tela + ' | config ' + conf + ' | logica ' + VERSAO_APP + ' | offline ' + cache + ')'
+      + (iguais ? '' : ' - ATENCAO: arquivos de versoes diferentes; suba todos e use Ctrl+F5');
+    $('versao').style.color = iguais ? '' : 'var(--err)';
+    document.title = 'Gestao Agricola ' + VERSAO_APP;
+  }
   const logEl = $('log');
   let tAviso = null;
   function aviso(msg, tipo) {
@@ -238,9 +253,10 @@
 
   // ---------- Offline ----------
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(() => log('Modo offline preparado.'), (e) => log('Offline indisponivel: ' + e.message));
+    navigator.serviceWorker.register('./sw.js').then(() => { log('Modo offline preparado.'); setTimeout(mostrarVersao, 1500); }, (e) => log('Offline indisponivel: ' + e.message));
   }
 
+  mostrarVersao();
   mostrarAparelho();
   if (restaurarAcesso()) log('Login anterior ainda vale (ate ' + new Date(validoAte).toLocaleTimeString('pt-BR') + ').', 'ok');
   atualizarConta(rotuloConta);
