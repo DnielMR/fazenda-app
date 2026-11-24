@@ -1,8 +1,8 @@
-// Prototipo: prova tres coisas no iPhone e no PC
+﻿// Prototipo: prova tres coisas no iPhone e no PC
 // 1) login Google  2) ler/gravar arquivo numa pasta do Google Drive
 // 3) banco SQLite local no aparelho, com envio e recebimento via Drive.
 (function () {
-  const VERSAO_APP = '0.0.1'; // mudar junto com index.html, config.js e sw.js
+  const VERSAO_APP = '0.0.4'; // mudar junto com index.html, config.js e sw.js
   const cfg = window.APP_CONFIG;
   const $ = (id) => document.getElementById(id);
 
@@ -211,10 +211,36 @@
       worker.postMessage({ id, acao, dados });
     });
   }
-  function mostrarResumo(r) {
-    $('linhas').textContent = r.linhas;
-    $('ultimas').textContent = r.ultimas.map((l) => '#' + l[0] + ' ' + l[1] + ' (' + l[2].slice(11, 19) + ')').join('\n') || '(vazio)';
+  // Consulta somente leitura: lista as tabelas com a contagem e mostra as primeiras linhas.
+  let tabelaAtual = '';
+  function mostrarTabelas(lista) {
+    $('linhas').textContent = lista.length + ' tabelas, ' + lista.reduce((s, t) => s + t.linhas, 0) + ' linhas';
+    const sel = $('tabelas'), anterior = tabelaAtual;
+    sel.innerHTML = '';
+    lista.forEach((t) => {
+      const o = document.createElement('option'); o.value = t.nome; o.textContent = t.nome + ' (' + t.linhas + ')'; sel.appendChild(o);
+    });
+    const preferida = lista.find((t) => t.nome === anterior) || lista.find((t) => t.linhas > 0) || lista[0];
+    if (preferida) { sel.value = preferida.nome; mostrarLinhas(preferida.nome); } else { $('grade').textContent = '(banco sem tabelas)'; }
   }
+  async function mostrarLinhas(nome) {
+    tabelaAtual = nome;
+    try {
+      const r = await chamar('ler', { tabela: nome, limite: 100 });
+      const g = $('grade'); g.innerHTML = '';
+      const info = document.createElement('p'); info.className = 'sub'; info.style.margin = '0 0 6px';
+      info.textContent = nome + ': ' + r.total + ' linhas' + (r.total > r.linhas.length ? ' (mostrando as ' + r.linhas.length + ' primeiras)' : '');
+      g.appendChild(info);
+      if (!r.linhas.length) { const v = document.createElement('p'); v.className = 'sub'; v.textContent = '(vazia)'; g.appendChild(v); return; }
+      const tb = document.createElement('table');
+      const cab = tb.createTHead().insertRow();
+      r.colunas.forEach((c) => { const th = document.createElement('th'); th.textContent = c; cab.appendChild(th); });
+      const corpo = tb.createTBody();
+      r.linhas.forEach((l) => { const tr = corpo.insertRow(); l.forEach((v) => { tr.insertCell().textContent = v === null ? '' : String(v); }); });
+      g.appendChild(tb);
+    } catch (e) { falha(e); }
+  }
+  $('tabelas').onchange = (e) => mostrarLinhas(e.target.value);
   async function iniciarBanco() {
     try {
       worker = new Worker('./db.worker.js', { type: 'module' });
@@ -225,8 +251,7 @@
       worker.onerror = (e) => falha(e.message || 'erro no worker do banco');
       const info = await chamar('iniciar');
       $('sqlite').textContent = 'SQLite ' + info.versao + ' (guardado no aparelho)';
-      mostrarResumo(await chamar('resumo'));
-      $('btnInserir').disabled = false;
+      mostrarTabelas(await chamar('tabelas'));
       log('Banco local aberto.', 'ok');
     } catch (e) {
       $('sqlite').textContent = 'nao abriu';
@@ -235,9 +260,72 @@
       } else falha(e);
     }
   }
-  $('btnInserir').onclick = () => tarefa($('btnInserir'), 'Gravando...', async () => {
-    mostrarResumo(await chamar('inserir', { texto: 'registro de ' + (navigator.platform || 'aparelho') }));
-    log('Registro gravado no banco local.', 'ok');
+  // Abrir um .db do computador (ex.: gerado do Excel por ferramentas/xlsm_para_sqlite.py)
+  $('btnAbrirDb').onclick = () => $('arquivoDb').click();
+  $('arquivoDb').onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    if (!confirm('Abrir "' + f.name + '" SUBSTITUI o banco deste aparelho. Continuar?')) return;
+    await tarefa($('btnAbrirDb'), 'Abrindo...', async () => {
+      mostrarTabelas(await chamar('importar', { bytes: await f.arrayBuffer() }));
+      log('Banco "' + f.name + '" aberto neste aparelho.', 'ok');
+    });
+  };
+  // Importar planilha Excel (.xlsm): le as tabelas no navegador e grava tudo ou nada.
+  function mostrarRelatorio(linhas, tipo) {
+    const r = $('relatorio'); r.innerHTML = '';
+    const ul = document.createElement('ul'); ul.style.cssText = 'margin:0;padding-left:18px;font-size:13px;color:' + (tipo === 'erro' ? 'var(--err)' : 'var(--txt)');
+    linhas.forEach((t) => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+    r.appendChild(ul);
+  }
+  $('btnImportarXlsm').onclick = () => $('arquivoXlsm').click();
+  let leitura = null; // ultima planilha lida (para "importar o que for valido" sem ler de novo)
+  async function importarXlsm(parcial) {
+    const esquema = await (await fetch('./esquema.json', { cache: 'no-store' })).json();
+    const sql = await (await fetch('./esquema.sql', { cache: 'no-store' })).text();
+    const r = await chamar('xlsm', { dados: leitura.dados, esquema, sql, parcial });
+    if (!r.sucesso) {
+      mostrarRelatorio(['NADA foi importado; o banco anterior foi mantido. Problemas encontrados:']
+        .concat(r.erros.map((x) => x.tabela + (x.linha ? ' (linha ' + x.linha + ' do Excel)' : '') + ': ' + x.msg)), 'erro');
+      if (r.erros.every((x) => x.tipo === 'dado')) {
+        const b = document.createElement('button'); b.className = 'sec';
+        b.textContent = 'Importar so o que for valido (descarta os registros acima)';
+        b.onclick = () => tarefa(b, 'Importando...', async () => {
+          if (!confirm('Os registros com problema serao DESCARTADOS (ficam listados no relatorio) e o banco do aparelho sera substituido. Continuar?')) return;
+          await importarXlsm(true);
+        });
+        $('relatorio').appendChild(b);
+      }
+      log('Importacao recusada: ' + r.erros.length + ' problema(s). Veja o relatorio.', 'erro');
+      return;
+    }
+    mostrarTabelas(r.tabelas);
+    const com = r.tabelas.filter((t) => t.linhas > 0);
+    const txt = ['Importado de "' + leitura.nome + '": ' + com.reduce((s, t) => s + t.linhas, 0) + ' linhas em ' + com.length + ' tabelas.']
+      .concat(com.map((t) => t.nome + ': ' + t.linhas));
+    if (r.descartes && r.descartes.length) {
+      txt.push('DESCARTADOS (' + r.descartes.length + '), nao entraram no banco:');
+      r.descartes.forEach((x) => txt.push(x.tabela + (x.linha ? ' (linha ' + x.linha + ' do Excel)' : '') + ': ' + x.msg));
+    }
+    mostrarRelatorio(txt);
+    log('Planilha "' + leitura.nome + '" importada' + (r.descartes && r.descartes.length ? ' (' + r.descartes.length + ' descartados).' : '.'), 'ok');
+  }
+  $('arquivoXlsm').onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    if (!confirm('Importar "' + f.name + '" SUBSTITUI o banco deste aparelho. Continuar?')) return;
+    await tarefa($('btnImportarXlsm'), 'Importando...', async () => {
+      mostrarRelatorio(['Lendo a planilha...']);
+      leitura = { nome: f.name, dados: await window.LerXlsm(f) };
+      await importarXlsm(false);
+    });
+  };
+  // Banco novo: so as tabelas do esquema (esquema.sql, gerado de esquema/colunas.csv)
+  $('btnNovoVazio').onclick = () => tarefa($('btnNovoVazio'), 'Criando...', async () => {
+    if (!confirm('Criar um banco VAZIO (so o esquema) SUBSTITUI o banco deste aparelho. Continuar?')) return;
+    const sql = await (await fetch('./esquema.sql', { cache: 'no-store' })).text();
+    mostrarTabelas(await chamar('vazio', { sql }));
+    log('Banco vazio criado com o esquema.', 'ok');
   });
   $('btnBancoEnviar').onclick = () => tarefa($('btnBancoEnviar'), 'Enviando...', async () => {
     const bytes = await chamar('exportar');
@@ -247,7 +335,7 @@
   $('btnBancoReceber').onclick = () => tarefa($('btnBancoReceber'), 'Recebendo...', async () => {
     if (!confirm('Isto SUBSTITUI o banco deste aparelho pelo do Drive. Continuar?')) return;
     const r = await receber(cfg.ARQUIVO_BANCO);
-    mostrarResumo(await chamar('importar', { bytes: await r.arrayBuffer() }));
+    mostrarTabelas(await chamar('importar', { bytes: await r.arrayBuffer() }));
     log('Banco do Drive carregado neste aparelho.', 'ok');
   });
 

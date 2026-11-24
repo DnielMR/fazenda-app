@@ -1,0 +1,1248 @@
+{
+ "tabelas": [
+  {
+   "tabela": "tbAreas",
+   "sql": "areas",
+   "colunas": [
+    {
+     "coluna": "ID Área",
+     "sql": "id_area"
+    },
+    {
+     "coluna": "Fazenda",
+     "sql": "fazenda"
+    },
+    {
+     "coluna": "Nome/Identificação Área",
+     "sql": "nome"
+    },
+    {
+     "coluna": "Área Cadastrada (ha)",
+     "sql": "hectares"
+    },
+    {
+     "coluna": "Cultivar Predominante",
+     "sql": "cultivar"
+    },
+    {
+     "coluna": "Situação",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    },
+    {
+     "coluna": "Atualizado em",
+     "sql": "atualizado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbProdutos",
+   "sql": "produtos",
+   "colunas": [
+    {
+     "coluna": "ID Produto",
+     "sql": "id_produto"
+    },
+    {
+     "coluna": "Nome Comercial",
+     "sql": "nome"
+    },
+    {
+     "coluna": "Tipo Produto",
+     "sql": "tipo"
+    },
+    {
+     "coluna": "Grupo",
+     "sql": "grupo"
+    },
+    {
+     "coluna": "Princípios Ativos",
+     "sql": "principios_ativos"
+    },
+    {
+     "coluna": "Unidade Base Estoque",
+     "sql": "unidade_base"
+    },
+    {
+     "coluna": "Saldo Inicial",
+     "sql": "saldo_inicial"
+    },
+    {
+     "coluna": "Estoque Mínimo",
+     "sql": "estoque_minimo"
+    },
+    {
+     "coluna": "Situação",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Saldo Atual Calculado",
+     "sql": "saldo_atual"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    },
+    {
+     "coluna": "Atualizado em",
+     "sql": "atualizado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbSafras",
+   "sql": "safras",
+   "colunas": [
+    {
+     "coluna": "ID Safra",
+     "sql": "id_safra"
+    },
+    {
+     "coluna": "ID Área",
+     "sql": "id_area"
+    },
+    {
+     "coluna": "Ano",
+     "sql": "ano"
+    },
+    {
+     "coluna": "Número",
+     "sql": "numero"
+    },
+    {
+     "coluna": "Safra",
+     "sql": "safra"
+    },
+    {
+     "coluna": "Cultivar",
+     "sql": "cultivar"
+    },
+    {
+     "coluna": "Situação",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    },
+    {
+     "coluna": "Atualizado em",
+     "sql": "atualizado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbGrupos",
+   "sql": "grupos",
+   "colunas": [
+    {
+     "coluna": "ID Grupo",
+     "sql": "id_grupo"
+    },
+    {
+     "coluna": "Nome",
+     "sql": "nome"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbPrincipiosAtivos",
+   "sql": "principios_ativos",
+   "colunas": [
+    {
+     "coluna": "ID Princípio Ativo",
+     "sql": "id_principio"
+    },
+    {
+     "coluna": "Nome",
+     "sql": "nome"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbProdutoGrupos",
+   "sql": "produto_grupos",
+   "colunas": [
+    {
+     "coluna": "ID Produto",
+     "sql": "id_produto"
+    },
+    {
+     "coluna": "ID Grupo",
+     "sql": "id_grupo"
+    }
+   ]
+  },
+  {
+   "tabela": "tbProdutoPrincipios",
+   "sql": "produto_principios",
+   "colunas": [
+    {
+     "coluna": "ID Produto",
+     "sql": "id_produto"
+    },
+    {
+     "coluna": "ID Princípio Ativo",
+     "sql": "id_principio"
+    }
+   ]
+  },
+  {
+   "tabela": "tbMedidas",
+   "sql": "medidas",
+   "colunas": [
+    {
+     "coluna": "ID Medida",
+     "sql": "id_medida"
+    },
+    {
+     "coluna": "Sigla",
+     "sql": "sigla"
+    },
+    {
+     "coluna": "Nome",
+     "sql": "nome"
+    },
+    {
+     "coluna": "Tipo",
+     "sql": "tipo"
+    },
+    {
+     "coluna": "Grandeza",
+     "sql": "grandeza"
+    },
+    {
+     "coluna": "Fator",
+     "sql": "fator"
+    },
+    {
+     "coluna": "Por",
+     "sql": "por"
+    },
+    {
+     "coluna": "Quantidade Por",
+     "sql": "quantidade_por"
+    },
+    {
+     "coluna": "Apelidos",
+     "sql": "apelidos"
+    },
+    {
+     "coluna": "Situação",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbCultivares",
+   "sql": "cultivares",
+   "colunas": [
+    {
+     "coluna": "ID Cultivar",
+     "sql": "id_cultivar"
+    },
+    {
+     "coluna": "Cultivar",
+     "sql": "cultivar"
+    },
+    {
+     "coluna": "Situação",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbCodigos",
+   "sql": "codigos",
+   "colunas": [
+    {
+     "coluna": "ID Código",
+     "sql": "id_codigo"
+    },
+    {
+     "coluna": "ID Cultivar",
+     "sql": "id_cultivar"
+    },
+    {
+     "coluna": "Código",
+     "sql": "codigo"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Situação",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbSementes",
+   "sql": "sementes",
+   "colunas": [
+    {
+     "coluna": "ID Semente",
+     "sql": "id_semente"
+    },
+    {
+     "coluna": "ID Produto",
+     "sql": "id_produto"
+    },
+    {
+     "coluna": "ID Código",
+     "sql": "id_codigo"
+    },
+    {
+     "coluna": "Cultivar",
+     "sql": "cultivar"
+    },
+    {
+     "coluna": "Código",
+     "sql": "codigo"
+    },
+    {
+     "coluna": "Lote",
+     "sql": "lote"
+    },
+    {
+     "coluna": "Germinação (%)",
+     "sql": "germinacao"
+    },
+    {
+     "coluna": "Vigor (%)",
+     "sql": "vigor"
+    },
+    {
+     "coluna": "PMS (g)",
+     "sql": "pms"
+    },
+    {
+     "coluna": "Peneira",
+     "sql": "peneira"
+    },
+    {
+     "coluna": "Origem Tratamento",
+     "sql": "origem_tratamento"
+    },
+    {
+     "coluna": "ID Semente Base",
+     "sql": "id_semente_base"
+    },
+    {
+     "coluna": "Situação Tratamento",
+     "sql": "situacao_tratamento"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    },
+    {
+     "coluna": "Atualizado em",
+     "sql": "atualizado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbTratamentoItens",
+   "sql": "tratamento_itens",
+   "colunas": [
+    {
+     "coluna": "ID Produto Semente",
+     "sql": "id_semente"
+    },
+    {
+     "coluna": "ID Produto Componente",
+     "sql": "id_componente"
+    },
+    {
+     "coluna": "Dose",
+     "sql": "dose"
+    },
+    {
+     "coluna": "Unidade Dose",
+     "sql": "unidade_dose"
+    },
+    {
+     "coluna": "Ordem",
+     "sql": "ordem"
+    }
+   ]
+  },
+  {
+   "tabela": "tbSafraCultivos",
+   "sql": "safra_cultivos",
+   "colunas": [
+    {
+     "coluna": "ID Cultivo",
+     "sql": "id_cultivo"
+    },
+    {
+     "coluna": "ID Safra",
+     "sql": "id_safra"
+    },
+    {
+     "coluna": "Ordem",
+     "sql": "ordem"
+    },
+    {
+     "coluna": "Cultivar",
+     "sql": "cultivar"
+    },
+    {
+     "coluna": "ID Código",
+     "sql": "id_codigo"
+    },
+    {
+     "coluna": "ID Produto Semente",
+     "sql": "id_produto"
+    },
+    {
+     "coluna": "Proporção (%)",
+     "sql": "proporcao"
+    },
+    {
+     "coluna": "Hectares",
+     "sql": "hectares"
+    },
+    {
+     "coluna": "Dose Planejada",
+     "sql": "dose"
+    },
+    {
+     "coluna": "Unidade Dose",
+     "sql": "unidade_dose"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbAplicacoes",
+   "sql": "aplicacoes",
+   "colunas": [
+    {
+     "coluna": "ID Aplicacao",
+     "sql": "id_aplicacao"
+    },
+    {
+     "coluna": "Número Aplicação",
+     "sql": "numero"
+    },
+    {
+     "coluna": "Fazenda",
+     "sql": "fazenda"
+    },
+    {
+     "coluna": "Produtor",
+     "sql": "produtor"
+    },
+    {
+     "coluna": "Safra",
+     "sql": "safra"
+    },
+    {
+     "coluna": "Data Emissão",
+     "sql": "data_emissao"
+    },
+    {
+     "coluna": "Data Prevista",
+     "sql": "data_prevista"
+    },
+    {
+     "coluna": "Data Efetiva",
+     "sql": "data_efetiva"
+    },
+    {
+     "coluna": "Cultivar",
+     "sql": "cultivar"
+    },
+    {
+     "coluna": "Estágio Cultura",
+     "sql": "estagio_cultura"
+    },
+    {
+     "coluna": "Alvo",
+     "sql": "alvo"
+    },
+    {
+     "coluna": "Responsável Técnico",
+     "sql": "responsavel_tecnico"
+    },
+    {
+     "coluna": "Observações Gerais",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Situação",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "Área Total Recomendada (ha)",
+     "sql": "area_total_ha"
+    },
+    {
+     "coluna": "Caminho PDF",
+     "sql": "caminho_pdf"
+    },
+    {
+     "coluna": "Data/Hora PDF",
+     "sql": "pdf_em"
+    },
+    {
+     "coluna": "Versão PDF",
+     "sql": "pdf_versao"
+    },
+    {
+     "coluna": "Criado por",
+     "sql": "criado_por"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    },
+    {
+     "coluna": "Atualizado em",
+     "sql": "atualizado_em"
+    },
+    {
+     "coluna": "E-mail Envio",
+     "sql": "email_envio"
+    },
+    {
+     "coluna": "Status Envio",
+     "sql": "status_envio"
+    }
+   ]
+  },
+  {
+   "tabela": "tbAplicacaoAreas",
+   "sql": "aplicacao_areas",
+   "colunas": [
+    {
+     "coluna": "ID Aplicação Área",
+     "sql": "id_aplicacao_area"
+    },
+    {
+     "coluna": "ID Aplicacao",
+     "sql": "id_aplicacao"
+    },
+    {
+     "coluna": "ID Área",
+     "sql": "id_area"
+    },
+    {
+     "coluna": "Fazenda (snapshot)",
+     "sql": "fazenda"
+    },
+    {
+     "coluna": "Área (snapshot)",
+     "sql": "area_nome"
+    },
+    {
+     "coluna": "Safra (snapshot)",
+     "sql": "safra"
+    },
+    {
+     "coluna": "Cultivar (snapshot)",
+     "sql": "cultivar"
+    },
+    {
+     "coluna": "ID Cultivo",
+     "sql": "id_cultivo"
+    },
+    {
+     "coluna": "Parte (snapshot)",
+     "sql": "parte"
+    },
+    {
+     "coluna": "Hectares Recomendados",
+     "sql": "hectares"
+    },
+    {
+     "coluna": "Ordem",
+     "sql": "ordem"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    }
+   ]
+  },
+  {
+   "tabela": "tbAplicacaoItens",
+   "sql": "aplicacao_itens",
+   "colunas": [
+    {
+     "coluna": "ID Item",
+     "sql": "id_item"
+    },
+    {
+     "coluna": "ID Aplicacao",
+     "sql": "id_aplicacao"
+    },
+    {
+     "coluna": "ID Produto",
+     "sql": "id_produto"
+    },
+    {
+     "coluna": "Nome Comercial Emitido",
+     "sql": "produto_nome"
+    },
+    {
+     "coluna": "Grupo Emitido",
+     "sql": "grupo"
+    },
+    {
+     "coluna": "Dose Recomendada",
+     "sql": "dose"
+    },
+    {
+     "coluna": "Unidade Dose",
+     "sql": "unidade_dose"
+    },
+    {
+     "coluna": "Área de Referência (ha)",
+     "sql": "area_ref_ha"
+    },
+    {
+     "coluna": "Quantidade Total Recomendada",
+     "sql": "quantidade"
+    },
+    {
+     "coluna": "Unidade Quantidade",
+     "sql": "unidade_quantidade"
+    },
+    {
+     "coluna": "Alvo Específico",
+     "sql": "alvo_especifico"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Conferência",
+     "sql": "conferencia"
+    },
+    {
+     "coluna": "Quantidade Efetiva Consolidada",
+     "sql": "quantidade_efetiva"
+    },
+    {
+     "coluna": "Status Item",
+     "sql": "status_item"
+    },
+    {
+     "coluna": "Escopo Área",
+     "sql": "escopo_area"
+    }
+   ]
+  },
+  {
+   "tabela": "tbAplicacaoSaidas",
+   "sql": "aplicacao_saidas",
+   "colunas": [
+    {
+     "coluna": "ID Saída",
+     "sql": "id_saida"
+    },
+    {
+     "coluna": "ID Aplicação",
+     "sql": "id_aplicacao"
+    },
+    {
+     "coluna": "Número Aplicação",
+     "sql": "numero"
+    },
+    {
+     "coluna": "Código Saída",
+     "sql": "codigo"
+    },
+    {
+     "coluna": "ID Item",
+     "sql": "id_item"
+    },
+    {
+     "coluna": "ID Área",
+     "sql": "id_area"
+    },
+    {
+     "coluna": "Fazenda (snapshot)",
+     "sql": "fazenda"
+    },
+    {
+     "coluna": "Área (snapshot)",
+     "sql": "area_nome"
+    },
+    {
+     "coluna": "ID Produto",
+     "sql": "id_produto"
+    },
+    {
+     "coluna": "Produto (snapshot)",
+     "sql": "produto_nome"
+    },
+    {
+     "coluna": "Grupo (snapshot)",
+     "sql": "grupo"
+    },
+    {
+     "coluna": "Dose Recomendada",
+     "sql": "dose"
+    },
+    {
+     "coluna": "Unidade Dose",
+     "sql": "unidade_dose"
+    },
+    {
+     "coluna": "Hectares",
+     "sql": "hectares"
+    },
+    {
+     "coluna": "Quantidade Recomendada",
+     "sql": "quantidade"
+    },
+    {
+     "coluna": "Unidade Quantidade",
+     "sql": "unidade_quantidade"
+    },
+    {
+     "coluna": "Ordem",
+     "sql": "ordem"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Situação",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbExecucaoItens",
+   "sql": "execucao_itens",
+   "colunas": [
+    {
+     "coluna": "ID Execução",
+     "sql": "id_execucao"
+    },
+    {
+     "coluna": "ID Etapa",
+     "sql": "id_etapa"
+    },
+    {
+     "coluna": "ID Aplicação",
+     "sql": "id_aplicacao"
+    },
+    {
+     "coluna": "Número Aplicação",
+     "sql": "numero"
+    },
+    {
+     "coluna": "ID Área",
+     "sql": "id_area"
+    },
+    {
+     "coluna": "Nome Área Emitido",
+     "sql": "area_nome"
+    },
+    {
+     "coluna": "ID Item",
+     "sql": "id_item"
+    },
+    {
+     "coluna": "ID Produto",
+     "sql": "id_produto"
+    },
+    {
+     "coluna": "Nome Produto Emitido",
+     "sql": "produto_nome"
+    },
+    {
+     "coluna": "Dose Recomendada",
+     "sql": "dose"
+    },
+    {
+     "coluna": "Unidade Dose",
+     "sql": "unidade_dose"
+    },
+    {
+     "coluna": "Hectares Previstos",
+     "sql": "hectares_previstos"
+    },
+    {
+     "coluna": "Hectares Tratados nesta Etapa",
+     "sql": "hectares_tratados"
+    },
+    {
+     "coluna": "Quantidade Recomendada para Área",
+     "sql": "quantidade_recomendada"
+    },
+    {
+     "coluna": "Quantidade Efetiva nesta Etapa",
+     "sql": "quantidade_efetiva"
+    },
+    {
+     "coluna": "Unidade Quantidade",
+     "sql": "unidade_quantidade"
+    },
+    {
+     "coluna": "Data Efetiva",
+     "sql": "data_efetiva"
+    },
+    {
+     "coluna": "Responsável",
+     "sql": "responsavel"
+    },
+    {
+     "coluna": "Conferência",
+     "sql": "conferencia"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Situação Execução",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "ID Movimentação Estoque",
+     "sql": "id_movimentacao"
+    },
+    {
+     "coluna": "Confirmado em",
+     "sql": "confirmado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbTratamentos",
+   "sql": "tratamentos",
+   "colunas": [
+    {
+     "coluna": "ID Tratamento",
+     "sql": "id_tratamento"
+    },
+    {
+     "coluna": "Data",
+     "sql": "data"
+    },
+    {
+     "coluna": "ID Semente Tratada",
+     "sql": "id_semente_tratada"
+    },
+    {
+     "coluna": "ID Semente Base",
+     "sql": "id_semente_base"
+    },
+    {
+     "coluna": "Quantidade",
+     "sql": "quantidade"
+    },
+    {
+     "coluna": "Unidade",
+     "sql": "unidade"
+    },
+    {
+     "coluna": "Responsável",
+     "sql": "responsavel"
+    },
+    {
+     "coluna": "Situação",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "Motivo Estorno",
+     "sql": "motivo_estorno"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    },
+    {
+     "coluna": "Atualizado em",
+     "sql": "atualizado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbMovEstoque",
+   "sql": "mov_estoque",
+   "colunas": [
+    {
+     "coluna": "ID Movimentação",
+     "sql": "id_movimentacao"
+    },
+    {
+     "coluna": "Data",
+     "sql": "data"
+    },
+    {
+     "coluna": "ID Produto",
+     "sql": "id_produto"
+    },
+    {
+     "coluna": "Produto",
+     "sql": "produto_nome"
+    },
+    {
+     "coluna": "Quantidade",
+     "sql": "quantidade"
+    },
+    {
+     "coluna": "Unidade Base",
+     "sql": "unidade_base"
+    },
+    {
+     "coluna": "Tipo Movimentação",
+     "sql": "tipo"
+    },
+    {
+     "coluna": "Documento de Origem",
+     "sql": "documento"
+    },
+    {
+     "coluna": "ID Aplicação",
+     "sql": "id_aplicacao"
+    },
+    {
+     "coluna": "ID Área",
+     "sql": "id_area"
+    },
+    {
+     "coluna": "ID Execução",
+     "sql": "id_execucao"
+    },
+    {
+     "coluna": "ID Movimentação Revertida",
+     "sql": "id_movimentacao_revertida"
+    },
+    {
+     "coluna": "ID Tratamento",
+     "sql": "id_tratamento"
+    },
+    {
+     "coluna": "Responsável",
+     "sql": "responsavel"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Quantidade Base Assinada",
+     "sql": "quantidade_assinada"
+    },
+    {
+     "coluna": "Situação",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "Autorização Saldo Negativo",
+     "sql": "autoriza_negativo"
+    },
+    {
+     "coluna": "Motivo Autorização",
+     "sql": "motivo_autorizacao"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbHistoricoAplicacoes",
+   "sql": "historico_aplicacoes",
+   "colunas": [
+    {
+     "coluna": "ID Registro Histórico",
+     "sql": "id_historico"
+    },
+    {
+     "coluna": "ID Aplicação",
+     "sql": "id_aplicacao"
+    },
+    {
+     "coluna": "Número Aplicação",
+     "sql": "numero"
+    },
+    {
+     "coluna": "Fazenda",
+     "sql": "fazenda"
+    },
+    {
+     "coluna": "Safra",
+     "sql": "safra"
+    },
+    {
+     "coluna": "Cultivar",
+     "sql": "cultivar"
+    },
+    {
+     "coluna": "ID Área",
+     "sql": "id_area"
+    },
+    {
+     "coluna": "Área",
+     "sql": "area_nome"
+    },
+    {
+     "coluna": "ID Cultivo",
+     "sql": "id_cultivo"
+    },
+    {
+     "coluna": "Parte",
+     "sql": "parte"
+    },
+    {
+     "coluna": "Hectares Previstos",
+     "sql": "hectares_previstos"
+    },
+    {
+     "coluna": "Hectares Efetivamente Tratados",
+     "sql": "hectares_tratados"
+    },
+    {
+     "coluna": "ID Produto",
+     "sql": "id_produto"
+    },
+    {
+     "coluna": "Produto",
+     "sql": "produto_nome"
+    },
+    {
+     "coluna": "Tipo Produto",
+     "sql": "tipo_produto"
+    },
+    {
+     "coluna": "Grupo",
+     "sql": "grupo"
+    },
+    {
+     "coluna": "Dose Recomendada por ha",
+     "sql": "dose"
+    },
+    {
+     "coluna": "Unidade Dose",
+     "sql": "unidade_dose"
+    },
+    {
+     "coluna": "Quantidade Recomendada para Área",
+     "sql": "quantidade_recomendada"
+    },
+    {
+     "coluna": "Quantidade Efetivamente Utilizada",
+     "sql": "quantidade_efetiva"
+    },
+    {
+     "coluna": "Unidade Quantidade Efetiva",
+     "sql": "unidade_quantidade"
+    },
+    {
+     "coluna": "Data Recomendação",
+     "sql": "data_recomendacao"
+    },
+    {
+     "coluna": "Data Efetiva Aplicação",
+     "sql": "data_efetiva"
+    },
+    {
+     "coluna": "Mês Aplicação",
+     "sql": "mes"
+    },
+    {
+     "coluna": "Alvo",
+     "sql": "alvo"
+    },
+    {
+     "coluna": "Observações",
+     "sql": "observacoes"
+    },
+    {
+     "coluna": "Conferência",
+     "sql": "conferencia"
+    },
+    {
+     "coluna": "Responsável",
+     "sql": "responsavel"
+    },
+    {
+     "coluna": "Situação",
+     "sql": "situacao"
+    },
+    {
+     "coluna": "ID Execução de Origem",
+     "sql": "id_execucao_origem"
+    }
+   ]
+  },
+  {
+   "tabela": "tbAuditoria",
+   "sql": "auditoria",
+   "colunas": [
+    {
+     "coluna": "ID Evento",
+     "sql": "id_evento"
+    },
+    {
+     "coluna": "Data e Hora",
+     "sql": "quando"
+    },
+    {
+     "coluna": "Usuário/Responsável",
+     "sql": "usuario"
+    },
+    {
+     "coluna": "Tipo Operação",
+     "sql": "operacao"
+    },
+    {
+     "coluna": "Entidade Afetada",
+     "sql": "entidade"
+    },
+    {
+     "coluna": "ID Registro",
+     "sql": "id_registro"
+    },
+    {
+     "coluna": "Valores Anteriores",
+     "sql": "antes"
+    },
+    {
+     "coluna": "Valores Posteriores",
+     "sql": "depois"
+    },
+    {
+     "coluna": "Motivo",
+     "sql": "motivo"
+    },
+    {
+     "coluna": "Resultado",
+     "sql": "resultado"
+    }
+   ]
+  },
+  {
+   "tabela": "tbDoseExcecoes",
+   "sql": "dose_excecoes",
+   "colunas": [
+    {
+     "coluna": "ID Exceção",
+     "sql": "id_excecao"
+    },
+    {
+     "coluna": "ID Aplicação",
+     "sql": "id_aplicacao"
+    },
+    {
+     "coluna": "ID Item",
+     "sql": "id_item"
+    },
+    {
+     "coluna": "ID Área",
+     "sql": "id_area"
+    },
+    {
+     "coluna": "Dose Aplicável",
+     "sql": "dose"
+    },
+    {
+     "coluna": "Unidade Dose",
+     "sql": "unidade_dose"
+    },
+    {
+     "coluna": "Motivo",
+     "sql": "motivo"
+    },
+    {
+     "coluna": "Criado por",
+     "sql": "criado_por"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    }
+   ]
+  },
+  {
+   "tabela": "tbGlossario",
+   "sql": "glossario",
+   "colunas": [
+    {
+     "coluna": "ID Termo",
+     "sql": "id_termo"
+    },
+    {
+     "coluna": "Termo",
+     "sql": "termo"
+    },
+    {
+     "coluna": "Explicação",
+     "sql": "explicacao"
+    },
+    {
+     "coluna": "Onde Aparece",
+     "sql": "onde"
+    },
+    {
+     "coluna": "Criado em",
+     "sql": "criado_em"
+    }
+   ]
+  }
+ ]
+}

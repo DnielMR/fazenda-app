@@ -1,5 +1,5 @@
-<!doctype html>
-<html lang="pt-BR" data-versao="0.0.1">
+﻿<!doctype html>
+<html lang="pt-BR" data-versao="0.0.4">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -29,6 +29,10 @@
   #aviso { position:fixed; left:12px; right:12px; top:calc(10px + env(safe-area-inset-top)); z-index:10; padding:12px 14px; border-radius:10px; font-weight:600; background:var(--verde); color:#fff; box-shadow:0 4px 16px rgba(0,0,0,.25); }
   #aviso.erro { background:var(--err); } #aviso[hidden] { display:none; }
   #resultado { color:var(--txt); }
+  select { width:100%; min-height:44px; padding:0 10px; font:inherit; color:var(--txt); background:var(--card); border:1px solid var(--borda); border-radius:10px; }
+  table { border-collapse:collapse; font-size:12px; white-space:nowrap; }
+  th, td { border:1px solid var(--borda); padding:4px 8px; text-align:left; max-width:240px; overflow:hidden; text-overflow:ellipsis; }
+  th { background:var(--bg); position:sticky; top:0; }
 </style>
 </head>
 <body>
@@ -66,11 +70,21 @@
 
   <section>
     <h2>4. Banco SQLite neste aparelho</h2>
-    <dl><dt>Motor</dt><dd id="sqlite">iniciando...</dd><dt>Registros</dt><dd id="linhas">-</dd></dl>
-    <pre id="ultimas"></pre>
-    <button id="btnInserir" disabled>Gravar um registro</button>
+    <dl><dt>Motor</dt><dd id="sqlite">iniciando...</dd><dt>Conteudo</dt><dd id="linhas">-</dd></dl>
+    <button id="btnImportarXlsm">Importar planilha Excel (.xlsm)</button>
+    <input type="file" id="arquivoXlsm" accept=".xlsm,.xlsx" hidden>
+    <div id="relatorio" style="margin-top:8px"></div>
+    <button class="sec" id="btnAbrirDb">Abrir banco do computador (.db)</button>
+    <input type="file" id="arquivoDb" accept=".db,.sqlite,.sqlite3,application/octet-stream" hidden>
+    <button class="sec" id="btnNovoVazio">Criar banco vazio (so o esquema)</button>
     <button class="sec" id="btnBancoEnviar" disabled>Enviar banco para o Drive</button>
     <button class="sec" id="btnBancoReceber" disabled>Receber banco do Drive</button>
+  </section>
+
+  <section>
+    <h2>5. Consulta dos dados (so leitura)</h2>
+    <select id="tabelas" aria-label="Tabela"></select>
+    <div id="grade" style="overflow-x:auto; margin-top:8px"></div>
   </section>
 
   <section>
@@ -80,6 +94,7 @@
 </main>
 <script src="config.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="xlsm.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
