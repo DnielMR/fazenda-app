@@ -5,11 +5,24 @@
   const cfg = window.APP_CONFIG;
   const $ = (id) => document.getElementById(id);
   const logEl = $('log');
+  let tAviso = null;
+  function aviso(msg, tipo) {
+    const a = $('aviso'); a.textContent = msg; a.className = tipo === 'erro' ? 'erro' : ''; a.hidden = false;
+    clearTimeout(tAviso); tAviso = setTimeout(() => { a.hidden = true; }, tipo === 'erro' ? 9000 : 4000);
+  }
   function log(msg, tipo) {
     const li = document.createElement('li');
     if (tipo) li.className = tipo;
     li.textContent = new Date().toLocaleTimeString('pt-BR') + '  ' + msg;
     logEl.prepend(li);
+    if (tipo) aviso(msg, tipo); // resultado visivel na hora, sem precisar rolar ate o registro
+  }
+  // Mostra "Gravando..." no botao enquanto a acao roda e devolve o texto no fim.
+  async function tarefa(btn, enquanto, fn) {
+    const antes = btn.textContent, estavaOff = btn.disabled;
+    btn.disabled = true; btn.textContent = enquanto;
+    try { await fn(); } catch (e) { falha(e); }
+    finally { btn.textContent = antes; btn.disabled = estavaOff; if (btn.id.indexOf('Banco') > 0 || btn.id.indexOf('Texto') > 0) atualizarConta($('conta').textContent); }
   }
   const falha = (e) => log('ERRO: ' + (e && e.message || e), 'erro');
 
@@ -36,9 +49,23 @@
   };
 
   // ---------- Login Google ----------
-  // O acesso dura cerca de 1 hora e fica so na memoria da tela (nao e gravado).
-  let acesso = null, validoAte = 0, cliente = null, pedidoPendente = null;
+  // O acesso dura cerca de 1 hora. Fica guardado neste aparelho ate vencer, para o F5 nao deslogar.
+  // Vale so para a pasta criada pelo app (escopo drive.file) e expira sozinho.
+  const CHAVE = 'gestao_acesso_google';
+  let acesso = null, validoAte = 0, rotuloConta = '', cliente = null, pedidoPendente = null;
   $('origem').textContent = location.origin;
+  function guardarAcesso() {
+    try { localStorage.setItem(CHAVE, JSON.stringify({ acesso, validoAte, rotuloConta })); } catch (e) { /* sem armazenamento: segue so em memoria */ }
+  }
+  function esquecerAcesso() { try { localStorage.removeItem(CHAVE); } catch (e) { /* nada */ } }
+  function restaurarAcesso() {
+    try {
+      const d = JSON.parse(localStorage.getItem(CHAVE) || 'null');
+      if (d && d.acesso && Date.now() < d.validoAte) { acesso = d.acesso; validoAte = d.validoAte; rotuloConta = d.rotuloConta || ''; return true; }
+      esquecerAcesso();
+    } catch (e) { /* ignora */ }
+    return false;
+  }
 
   function configurado() { return cfg.CLIENT_ID.indexOf('COLE_AQUI') !== 0; }
 
@@ -89,12 +116,13 @@
         const r = await fetch('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)', { headers: { Authorization: 'Bearer ' + acesso } });
         if (r.ok) nome = (await r.json()).user.emailAddress;
       } catch (e) { /* so o rotulo */ }
+      rotuloConta = nome; guardarAcesso();
       atualizarConta(nome); log('Entrou: ' + nome, 'ok');
     } catch (e) { falha(e); }
   };
   $('btnSair').onclick = () => {
     if (acesso && typeof google !== 'undefined') google.accounts.oauth2.revoke(acesso, () => {});
-    acesso = null; validoAte = 0; atualizarConta(); log('Saiu (acesso revogado).');
+    acesso = null; validoAte = 0; rotuloConta = ''; esquecerAcesso(); atualizarConta(); log('Saiu (acesso revogado).');
   };
 
   // ---------- Google Drive (pasta do app) ----------
@@ -147,19 +175,18 @@
     return drive(API + '/' + ex.id + '?alt=media');
   }
 
-  $('btnTextoGravar').onclick = async () => {
-    try {
-      const doc = { gravadoEm: new Date().toISOString(), aparelho: navigator.userAgent.slice(0, 80) };
-      await enviar(cfg.ARQUIVO_TEXTO, JSON.stringify(doc));
-      log('Gravei ' + cfg.ARQUIVO_TEXTO + ' na pasta "' + cfg.PASTA + '" do Drive.', 'ok');
-    } catch (e) { falha(e); }
-  };
-  $('btnTextoLer').onclick = async () => {
-    try {
-      const r = await receber(cfg.ARQUIVO_TEXTO);
-      log('Li do Drive: ' + (await r.text()), 'ok');
-    } catch (e) { falha(e); }
-  };
+  $('btnTextoGravar').onclick = () => tarefa($('btnTextoGravar'), 'Gravando...', async () => {
+    const doc = { gravadoEm: new Date().toISOString(), aparelho: navigator.userAgent.slice(0, 80) };
+    await enviar(cfg.ARQUIVO_TEXTO, JSON.stringify(doc));
+    $('resultado').textContent = 'Gravado no Drive as ' + new Date().toLocaleTimeString('pt-BR');
+    log('Gravei ' + cfg.ARQUIVO_TEXTO + ' na pasta "' + cfg.PASTA + '" do Drive.', 'ok');
+  });
+  $('btnTextoLer').onclick = () => tarefa($('btnTextoLer'), 'Lendo...', async () => {
+    const r = await receber(cfg.ARQUIVO_TEXTO);
+    const txt = await r.text();
+    $('resultado').textContent = 'Lido do Drive: ' + txt;
+    log('Li ' + cfg.ARQUIVO_TEXTO + ' do Drive.', 'ok');
+  });
 
   // ---------- Banco SQLite no aparelho ----------
   let worker = null, seq = 0; const pend = {};
@@ -186,27 +213,28 @@
       mostrarResumo(await chamar('resumo'));
       $('btnInserir').disabled = false;
       log('Banco local aberto.', 'ok');
-    } catch (e) { $('sqlite').textContent = 'nao abriu'; falha(e); }
+    } catch (e) {
+      $('sqlite').textContent = 'nao abriu';
+      if (/Access Handle|NoModificationAllowed|locked/i.test(String(e && e.message))) {
+        falha('O banco ja esta aberto em outra aba ou janela deste app. Feche as outras (inclusive o app da tela inicial) e recarregue.');
+      } else falha(e);
+    }
   }
-  $('btnInserir').onclick = async () => {
-    try { mostrarResumo(await chamar('inserir', { texto: 'registro de ' + (navigator.platform || 'aparelho') })); log('Registro gravado no banco local.', 'ok'); }
-    catch (e) { falha(e); }
-  };
-  $('btnBancoEnviar').onclick = async () => {
-    try {
-      const bytes = await chamar('exportar');
-      await enviar(cfg.ARQUIVO_BANCO, bytes);
-      log('Enviei o banco (' + bytes.byteLength + ' bytes) para o Drive.', 'ok');
-    } catch (e) { falha(e); }
-  };
-  $('btnBancoReceber').onclick = async () => {
-    try {
-      if (!confirm('Isto SUBSTITUI o banco deste aparelho pelo do Drive. Continuar?')) return;
-      const r = await receber(cfg.ARQUIVO_BANCO);
-      mostrarResumo(await chamar('importar', { bytes: await r.arrayBuffer() }));
-      log('Banco do Drive carregado neste aparelho.', 'ok');
-    } catch (e) { falha(e); }
-  };
+  $('btnInserir').onclick = () => tarefa($('btnInserir'), 'Gravando...', async () => {
+    mostrarResumo(await chamar('inserir', { texto: 'registro de ' + (navigator.platform || 'aparelho') }));
+    log('Registro gravado no banco local.', 'ok');
+  });
+  $('btnBancoEnviar').onclick = () => tarefa($('btnBancoEnviar'), 'Enviando...', async () => {
+    const bytes = await chamar('exportar');
+    await enviar(cfg.ARQUIVO_BANCO, bytes);
+    log('Enviei o banco (' + bytes.byteLength + ' bytes) para o Drive.', 'ok');
+  });
+  $('btnBancoReceber').onclick = () => tarefa($('btnBancoReceber'), 'Recebendo...', async () => {
+    if (!confirm('Isto SUBSTITUI o banco deste aparelho pelo do Drive. Continuar?')) return;
+    const r = await receber(cfg.ARQUIVO_BANCO);
+    mostrarResumo(await chamar('importar', { bytes: await r.arrayBuffer() }));
+    log('Banco do Drive carregado neste aparelho.', 'ok');
+  });
 
   // ---------- Offline ----------
   if ('serviceWorker' in navigator) {
@@ -214,7 +242,8 @@
   }
 
   mostrarAparelho();
-  atualizarConta();
+  if (restaurarAcesso()) log('Login anterior ainda vale (ate ' + new Date(validoAte).toLocaleTimeString('pt-BR') + ').', 'ok');
+  atualizarConta(rotuloConta);
   if (!configurado()) log('Falta colocar o ID do cliente em config.js (veja LEIA-ME.md, passo 2).', 'erro');
   iniciarBanco();
 })();

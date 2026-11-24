@@ -1,5 +1,5 @@
 // Service worker: deixa o app abrir sem internet (so os arquivos do proprio app; dados nunca passam por aqui).
-const VERSAO = 'proto-2';
+const VERSAO = 'proto-4';
 const ARQUIVOS = ['./', 'index.html', 'app.js', 'config.js', 'db.worker.js', 'manifest.webmanifest',
   'lib/sqlite3.mjs', 'lib/sqlite3.wasm', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
