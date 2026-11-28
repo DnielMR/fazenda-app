@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="pt-BR" data-versao="0.0.7">
+<html lang="pt-BR" data-versao="0.0.10">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Gestao Agricola - Teste</title>
+<title>Gestão Agrícola - Teste</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -33,14 +33,29 @@
   table { border-collapse:collapse; font-size:12px; white-space:nowrap; }
   th, td { border:1px solid var(--borda); padding:4px 8px; text-align:left; max-width:240px; overflow:hidden; text-overflow:ellipsis; }
   th { background:var(--bg); position:sticky; top:0; }
+  /* Padrao de tela (tela.js, D-059): campos, lista com busca, confirmar, mensagem final */
+  input[type=text], input[type=search], input[type=date], textarea { width:100%; min-height:44px; padding:8px 10px; font:inherit; color:var(--txt); background:var(--card); border:1px solid var(--borda); border-radius:10px; }
+  textarea { min-height:96px; resize:vertical; }
+  [aria-invalid=true] { border-color:var(--err); }
+  .form h3 { font-size:15px; margin:0 0 8px; }
+  .campo { margin:0 0 10px; } .campo label { display:block; font-size:14px; font-weight:600; margin:0 0 4px; }
+  .campo small { display:block; color:var(--mut); font-size:12px; margin-top:4px; } .erro-campo { color:var(--err); font-size:13px; margin-top:4px; }
+  ul.lista { list-style:none; margin:6px 0 0; padding:0; } ul.lista li { padding:0; border:0; }
+  button.item { display:block; text-align:left; background:transparent; color:var(--txt); border:1px solid var(--borda); min-height:44px; padding:8px 10px; margin-top:6px; font-weight:400; }
+  button.item b { display:block; font-size:15px; } button.item span { display:block; font-size:13px; color:var(--mut); }
+  .msg { margin-top:10px; padding:10px 12px; border-radius:10px; font-size:14px; border:1px solid var(--borda); }
+  .msg.ok { border-color:var(--ok); color:var(--ok); } .msg.erro { border-color:var(--err); color:var(--err); } .msg.info { color:var(--mut); }
+  .msg div { margin-top:4px; color:var(--txt); }
+  .confirmar { margin-top:10px; padding:10px 12px; border:2px solid var(--verde); border-radius:10px; font-size:14px; }
+  .confirmar ul { margin:6px 0 0; padding-left:18px; }
 </style>
 </head>
 <body>
 <div id="aviso" role="status" hidden></div>
 <main>
-  <h1>Gestao Agricola - teste de viabilidade</h1>
+  <h1>Gestão Agrícola - teste de viabilidade</h1>
   <p class="sub" id="versao" style="margin:0 0 4px"></p>
-  <p class="sub">Tela temporaria: so prova login, Google Drive e banco no aparelho. Nao e o app final.</p>
+  <p class="sub">Tela temporária: só prova login, Google Drive e banco no aparelho. Não é o app final.</p>
 
   <section>
     <h2>1. Este aparelho</h2>
@@ -48,14 +63,14 @@
       <dt>Instalado</dt><dd id="instalado">...</dd>
       <dt>HTTPS</dt><dd id="https">...</dd>
       <dt>Armazenamento fixo</dt><dd id="persistente">...</dd>
-      <dt>Espaco</dt><dd id="espaco">...</dd>
+      <dt>Espaço</dt><dd id="espaco">...</dd>
     </dl>
     <button class="sec" id="btnPersistir">Pedir armazenamento persistente</button>
   </section>
 
   <section>
     <h2>2. Conta Google</h2>
-    <dl><dt>Conta</dt><dd id="conta">nao entrou</dd></dl>
+    <dl><dt>Conta</dt><dd id="conta">não entrou</dd></dl>
     <p class="sub" style="margin:8px 0 0">Origem a cadastrar no Google: <code id="origem"></code></p>
     <button id="btnEntrar">Entrar com o Google</button>
     <button class="sec" id="btnSair" hidden>Sair</button>
@@ -70,22 +85,34 @@
 
   <section>
     <h2>4. Banco SQLite neste aparelho</h2>
-    <dl><dt>Motor</dt><dd id="sqlite">iniciando...</dd><dt>Conteudo</dt><dd id="linhas">-</dd></dl>
+    <dl><dt>Motor</dt><dd id="sqlite">iniciando...</dd><dt>Conteúdo</dt><dd id="linhas">-</dd></dl>
     <button id="btnImportarXlsm">Importar planilha Excel (.xlsm)</button>
     <input type="file" id="arquivoXlsm" accept=".xlsm,.xlsx" hidden>
     <div id="relatorio" style="margin-top:8px"></div>
     <button class="sec" id="btnAbrirDb">Abrir banco do computador (.db)</button>
     <input type="file" id="arquivoDb" accept=".db,.sqlite,.sqlite3,application/octet-stream" hidden>
-    <button class="sec" id="btnNovoVazio">Criar banco vazio (so o esquema)</button>
+    <button class="sec" id="btnNovoVazio">Criar banco vazio (só o esquema)</button>
     <button class="sec" id="btnBancoEnviar" disabled>Enviar banco para o Drive</button>
     <button class="sec" id="btnBancoReceber" disabled>Receber banco do Drive</button>
   </section>
 
   <section>
-    <h2>5. Consulta dos dados (so leitura)</h2>
+    <h2>5. Consulta dos dados (só leitura)</h2>
     <select id="tabelas" aria-label="Tabela"></select>
-    <select id="ordem" aria-label="Ordem" style="margin-top:6px"><option value="">Mostrar as primeiras 100 linhas</option><option value="desc">Mostrar as mais recentes (ultimas 100)</option></select>
+    <select id="ordem" aria-label="Ordem" style="margin-top:6px"><option value="">Mostrar as primeiras 100 linhas</option><option value="desc">Mostrar as mais recentes (últimas 100)</option></select>
     <div id="grade" style="overflow-x:auto; margin-top:8px"></div>
+  </section>
+
+  <section>
+    <h2>6. Observação de uma ficha</h2>
+    <p class="sub" style="margin:0 0 6px">Primeira tela no padrão que as próximas telas vão usar: escolha a ficha, edite, confira e grave.</p>
+    <div id="telaFichas"></div>
+  </section>
+
+  <section>
+    <h2>7. Áreas</h2>
+    <p class="sub" style="margin:0 0 6px">Cadastre e corrija as áreas (talhões). Nada é apagado: para tirar uma área de uso, mude a situação para Inativa.</p>
+    <div id="telaAreas"></div>
   </section>
 
   <section>
@@ -96,6 +123,8 @@
 <script src="config.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="xlsm.js"></script>
+<script src="tela.js"></script>
+<script src="tela_cadastros.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

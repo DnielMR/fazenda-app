@@ -1,7 +1,7 @@
 // Service worker: deixa o app abrir sem internet (so os arquivos do proprio app; dados nunca passam por aqui).
-const VERSAO = '0.0.7'; // mudar junto com index.html (data-versao), config.js (VERSAO) e app.js (VERSAO_APP)
+const VERSAO = '0.0.10'; // mudar junto com index.html (data-versao), config.js (VERSAO) e app.js (VERSAO_APP)
 const ARQUIVOS = ['./', 'index.html', 'app.js', 'config.js', 'db.worker.js', 'manifest.webmanifest',
-  'esquema.sql', 'esquema.json', 'xlsm.js', 'lib/sqlite3.mjs', 'lib/sqlite3.wasm', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
+  'esquema.sql', 'esquema.json', 'xlsm.js', 'regras.js', 'escrita.js', 'tela.js', 'tela_cadastros.js', 'lib/sqlite3.mjs', 'lib/sqlite3.wasm', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSAO).then((c) => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));

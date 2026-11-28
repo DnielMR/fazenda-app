@@ -16,7 +16,7 @@
     const dv = new DataView(buf);
     let eocd = -1;
     for (let i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 65557); i--) { if (u32(dv, i) === 0x06054b50) { eocd = i; break; } }
-    if (eocd < 0) throw new Error('Este arquivo nao e um .xlsm/.xlsx valido (zip nao encontrado).');
+    if (eocd < 0) throw new Error('Este arquivo não é um .xlsm/.xlsx válido (zip não encontrado).');
     const n = u16(dv, eocd + 10); let p = u32(dv, eocd + 16);
     const itens = {}, td = new TextDecoder();
     for (let i = 0; i < n; i++) {
@@ -31,7 +31,7 @@
       const cru = new Uint8Array(buf, ini, it.comp);
       if (it.metodo === 0) return cru;
       if (it.metodo === 8) return inflarRaw(cru);
-      throw new Error('Compactacao nao suportada no zip: ' + it.metodo);
+      throw new Error('Compactação não suportada no zip: ' + it.metodo);
     }
     return {
       nomes: () => Object.keys(itens),
@@ -68,7 +68,7 @@
   async function lerXlsm(arquivo) {
     const zip = await abrirZip(await arquivo.arrayBuffer());
     const wbTxt = await zip.texto('xl/workbook.xml');
-    if (!wbTxt) throw new Error('Nao achei xl/workbook.xml: o arquivo nao parece uma planilha do Excel.');
+    if (!wbTxt) throw new Error('Não achei xl/workbook.xml: o arquivo não parece uma planilha do Excel.');
     const rels = {};
     lista(xml(await zip.texto('xl/_rels/workbook.xml.rels')), 'Relationship').forEach((r) => { rels[r.getAttribute('Id')] = r.getAttribute('Target'); });
 

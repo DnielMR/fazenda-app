@@ -1,6 +1,7 @@
 // Banco SQLite no aparelho (worker). Guarda em OPFS com o modo "sahpool"
 // (nao exige cabecalhos especiais do servidor; funciona no Safari 16.4+).
 import sqlite3InitModule from './lib/sqlite3.mjs';
+import { executarComando, conferirSafras } from './escrita.js';
 
 const NOME = '/fazenda.db';
 let sqlite3 = null, pool = null, db = null;
@@ -44,7 +45,7 @@ async function substituir(bytes, validar) {
 }
 function exigirEsquema() {
   const t = db.selectValues("SELECT name FROM sqlite_master WHERE type='table' AND name IN ('areas','produtos','aplicacoes')");
-  if (t.length < 3) throw new Error('Este arquivo nao parece um banco da fazenda (faltam as tabelas areas, produtos ou aplicacoes). O banco anterior foi mantido.');
+  if (t.length < 3) throw new Error('Este arquivo não parece um banco da fazenda (faltam as tabelas áreas, produtos ou aplicações). O banco anterior foi mantido.');
 }
 
 // ---------- Conferencia de cada valor ANTES do INSERT (I3, I5, I11; A50) ----------
@@ -66,8 +67,8 @@ function contextoPlanilha(dados, esquema, siglasExtra, correcoes) {
 function msgSql(e) {
   const m = String(e.message || e).replace(/^.*?SQLITE_/, 'SQLITE_');
   let x;
-  if ((x = /NOT NULL constraint failed: (\S+)/.exec(m))) return 'campo obrigatorio vazio (' + x[1] + ')';
-  if ((x = /UNIQUE constraint failed: (\S+)/.exec(m))) return 'valor repetido: ja existe outro registro igual em ' + x[1] + ' (maiuscula/minuscula e espacos nas pontas nao diferenciam)';
+  if ((x = /NOT NULL constraint failed: (\S+)/.exec(m))) return 'campo obrigatório vazio (' + x[1] + ')';
+  if ((x = /UNIQUE constraint failed: (\S+)/.exec(m))) return 'valor repetido: já existe outro registro igual em ' + x[1] + ' (maiúscula/minúscula e espaços nas pontas não diferenciam)';
   if ((x = /CHECK constraint failed: (.+)$/.exec(m))) return 'valor fora do permitido: ' + x[1];
   if ((x = /cannot store (\w+) value in (\w+) column (\S+)/.exec(m))) return 'tipo errado: ' + x[1] + ' em coluna ' + x[2] + ' (' + x[3] + ')';
   return m;
@@ -95,7 +96,7 @@ function preparar(t, l, ctx) {
     const onde = 'coluna "' + c.coluna + '": valor "' + x + '" ';
     const nao = (kind, texto, opcoes) => ({ msg: onde + texto, col: c.sql, colNome: c.coluna, valor: x, kind, opcoes });
     if (typeof x === 'string') {
-      if (ERRO_EXCEL.test(x)) return nao('erro_excel', 'e um erro de formula do Excel (corrija a celula na planilha ou digite o valor certo aqui)');
+      if (ERRO_EXCEL.test(x)) return nao('erro_excel', 'é um erro de fórmula do Excel (corrija a célula na planilha ou digite o valor certo aqui)');
       if (c.nome_unico) {
         x = x.trim(); v[i] = x === '' ? null : x; if (x === '') continue; // I11: espaco nas pontas nao conta
         const exato = t.sql + '|' + c.sql + '|' + x.toLowerCase(), ka = t.sql + '|' + c.sql + '|' + semAcento(x);
@@ -105,7 +106,7 @@ function preparar(t, l, ctx) {
         if (antesE !== undefined && antesE !== l.r) return nao('repetido', 'e o mesmo nome da linha ' + antesE + ' (sem diferenciar maiuscula e espacos); digite outro nome');
         if (antesA !== undefined && antesA !== l.r) {
           if (cr && cr.diferente) ctx.corrigidos.push({ tabela: t.sql, linha: l.r, id: v[0], col: c.sql, antes: x, depois: x, diferente: true, parecido: antesA });
-          else return nao('parecido', 'tem nome parecido com o da linha ' + antesA + ' (so muda o acento). E o mesmo produto ou outro diferente?');
+          else return nao('parecido', 'tem nome parecido com o da linha ' + antesA + ' (só muda o acento). É o mesmo produto ou outro diferente?');
         }
       }
     }
@@ -116,17 +117,17 @@ function preparar(t, l, ctx) {
         if (/^-?\d+(\.\d+)?$/.test(s) && !/^-?\d{1,3}\.\d{3}$/.test(s)) n = Number(s); // 1.5 ou 1500 (1.500 e ambiguo)
         else if (/^-?\d+,\d+$/.test(s)) n = Number(s.replace(',', '.')); // 1,5
         else if (/^-?\d{1,3}(\.\d{3})+,\d+$/.test(s)) n = Number(s.replace(/\./g, '').replace(',', '.')); // 1.500,50
-        if (n === null) return nao('numero', /^-?\d{1,3}\.\d{3}$/.test(s) ? 'e ambiguo (1.500 pode ser mil e quinhentos ou um e meio); digite o numero certo' : 'nao e numero');
-        if (n !== Number(s) && ctx.avisos.length < 20) ctx.avisos.push({ tabela: t.sql, linha: l.r, msg: onde + 'foi lido como ' + n + ' (virgula decimal brasileira)' });
+        if (n === null) return nao('numero', /^-?\d{1,3}\.\d{3}$/.test(s) ? 'é ambíguo (1.500 pode ser mil e quinhentos ou um e meio); digite o número certo' : 'não é número');
+        if (n !== Number(s) && ctx.avisos.length < 20) ctx.avisos.push({ tabela: t.sql, linha: l.r, msg: onde + 'foi lido como ' + n + ' (vírgula decimal brasileira)' });
         x = n; v[i] = x;
       }
-      if (c.tipo === 'int' && !Number.isInteger(x)) return nao('numero', 'deveria ser numero inteiro');
+      if (c.tipo === 'int' && !Number.isInteger(x)) return nao('numero', 'deveria ser número inteiro');
     } else if (c.tipo === 'data' || c.tipo === 'datahora') {
-      if (typeof x !== 'string' || !ISO.test(x)) return nao('data', 'nao e uma data valida (digite como AAAA-MM-DD)');
+      if (typeof x !== 'string' || !ISO.test(x)) return nao('data', 'não é uma data válida (digite como AAAA-MM-DD)');
     } else if (c.tipo === 'enum' && c.dominio && !c.dominio.includes(String(x))) {
-      return nao('enum', 'esta fora das opcoes permitidas', c.dominio);
+      return nao('enum', 'está fora das opções permitidas', c.dominio);
     }
-    if (c.unidade && !ctx.med.has(String(x))) return nao('unidade', 'nao e uma unidade cadastrada em Medidas (sigla exata, como em kg, L, sc 60 kg)', [...ctx.med].sort());
+    if (c.unidade && !ctx.med.has(String(x))) return nao('unidade', 'não é uma unidade cadastrada em Medidas (sigla exata, como em kg, L, sc 60 kg)', [...ctx.med].sort());
   }
   return { v, msg: null };
 }
@@ -192,8 +193,8 @@ function contexto(conn, tab, o) {
     const p = conn.selectArrays('SELECT saldo_atual, unidade_base, atualizado_em FROM produtos WHERE id_produto=?', [o.id_produto])[0];
     return {
       data: m ? dia(m[0]) : (p ? dia(p[2]) : null),
-      texto: (m ? 'ultima movimentacao ' + dia(m[0]) + ', ' + m[1] + ' (' + m[2] + ')' : 'sem movimentacao de estoque') + '; ' + n + ' movimento(s)'
-        + (p ? '; saldo ' + p[0] + ' ' + p[1] : '; produto nao encontrado')
+      texto: (m ? 'última movimentação ' + dia(m[0]) + ', ' + m[1] + ' (' + m[2] + ')' : 'sem movimentação de estoque') + '; ' + n + ' movimento(s)'
+        + (p ? '; saldo ' + p[0] + ' ' + p[1] : '; produto não encontrado')
     };
   }
   if (tab === 'areas') {
@@ -202,7 +203,7 @@ function contexto(conn, tab, o) {
     const datas = [f && dia(f[1]), e && dia(e[0])].filter(Boolean).sort();
     return {
       data: datas.length ? datas[datas.length - 1] : dia(o.atualizado_em),
-      texto: (f ? 'ultima ficha n. ' + f[0] + ' de ' + dia(f[1]) + ' (' + f[2] + ')' : 'sem ficha') + (e ? '; ultima execucao ' + dia(e[0]) : '; sem execucao')
+      texto: (f ? 'última ficha n. ' + f[0] + ' de ' + dia(f[1]) + ' (' + f[2] + ')' : 'sem ficha') + (e ? '; última execução ' + dia(e[0]) : '; sem execução')
     };
   }
   if (tab === 'aplicacoes') {
@@ -213,8 +214,8 @@ function contexto(conn, tab, o) {
     const mv = conn.selectValue('SELECT count(*) FROM mov_estoque WHERE id_aplicacao=?', [id]);
     return {
       data: ex[1] ? dia(ex[1]) : dia(o.data_emissao),
-      texto: 'ficha n. ' + o.numero + ', emitida em ' + dia(o.data_emissao) + ' (' + o.situacao + '); area(s): ' + (areas || '-') + '; produto(s): ' + (prods || '-')
-        + '; ' + (ex[0] ? ex[0] + ' execucao(oes), ultima em ' + dia(ex[1]) : 'sem execucao') + '; ' + mv + ' movimento(s) de estoque'
+      texto: 'ficha n. ' + o.numero + ', emitida em ' + dia(o.data_emissao) + ' (' + o.situacao + '); área(s): ' + (areas || '-') + '; produto(s): ' + (prods || '-')
+        + '; ' + (ex[0] ? ex[0] + ' execução(ões), última em ' + dia(ex[1]) : 'sem execução') + '; ' + mv + ' movimento(s) de estoque'
     };
   }
   return { data: dia(o.atualizado_em || o.criado_em), texto: o.atualizado_em ? 'atualizado em ' + dia(o.atualizado_em) : (o.criado_em ? 'criado em ' + dia(o.criado_em) : 'sem data') };
@@ -273,7 +274,7 @@ function comparar(dados, esquema, sql, correcoes) {
       }
       const iAp = cols.indexOf('id_aplicacao');
       if (colide && iAp >= 0 && fichasConflito.has(r[iAp])) { p.set(k, { acao: 'inserir' }); r0.novos++; continue; } // segue a ficha (renumerada ou descartada)
-      if (colide) { p.set(k, { acao: 'bloqueado', motivo: colide.u.u + ' "' + r[colide.u.i] + '" ja existe em outro registro' }); r0.bloqueados++; continue; }
+      if (colide) { p.set(k, { acao: 'bloqueado', motivo: colide.u.u + ' "' + r[colide.u.i] + '" já existe em outro registro' }); r0.bloqueados++; continue; }
       p.set(k, { acao: 'inserir' }); r0.novos++;
     }
     resumo.push(r0);
@@ -304,11 +305,11 @@ function mesclar(decisoes, parcial, arquivo, usuario) {
     }
   }
   // fichas com numero repetido: cada uma precisa de decisao (descartar ou renumerar)
-  const renum = new Map(), excl = { aplicacoes: new Set() }, MOTIVO_F = 'Numero de ficha ja usado por outra ficha; decisao do usuario na importacao de "' + arquivo + '"';
+  const renum = new Map(), excl = { aplicacoes: new Set() }, MOTIVO_F = 'Número de ficha já usado por outra ficha; decisão do usuário na importação de "' + arquivo + '"';
   for (const [k, v] of plano.aplicacoes) {
     if (v.acao !== 'conflito' || v.tipo !== 'ficha') continue;
     const dec = decisoes[v.id], idNovo = JSON.parse(k)[0];
-    if (dec !== 'descartar' && dec !== 'renumerar') throw new Error('Decida o que fazer com cada ficha de numero repetido (descartar ou renumerar).');
+    if (dec !== 'descartar' && dec !== 'renumerar') throw new Error('Decida o que fazer com cada ficha de número repetido (descartar ou renumerar).');
     const de = tmp.selectValue('SELECT numero FROM aplicacoes WHERE id_aplicacao=?', [idNovo]);
     if (dec === 'renumerar') renum.set(idNovo, { de, para: v.novoNumero }); else excl.aplicacoes.add(idNovo);
     fichas.push({ id: idNovo, de, para: dec === 'renumerar' ? v.novoNumero : null, acao: dec });
@@ -348,18 +349,18 @@ function mesclar(decisoes, parcial, arquivo, usuario) {
         if (t.sql === 'aplicacao_saidas' && iCod >= 0 && rr[iCod]) rr[iCod] = pad4(rn.para) + String(rr[iCod]).replace(/^\d+/, '');
         if (t.sql === 'mov_estoque' && iDoc >= 0 && rr[iDoc]) rr[iDoc] = String(rr[iDoc]).replace(/Aplicacao\s+\d+/, 'Aplicacao ' + pad4(rn.para)).replace(/\b\d{4}-S(\d+)/g, pad4(rn.para) + '-S$1');
         if (t.sql === 'aplicacoes' && iObs >= 0) { // registro da renumeracao na propria ficha
-          const nota = '[Renumerada na importacao de ' + hoje + ': era a ficha ' + pad4(rn.de) + ' (arquivo "' + arquivo + '"), agora ' + pad4(rn.para) + '.]';
+          const nota = '[Renumerada na importação de ' + hoje + ': era a ficha ' + pad4(rn.de) + ' (arquivo "' + arquivo + '"), agora ' + pad4(rn.para) + '.]';
           rr[iObs] = rr[iObs] ? rr[iObs] + ' ' + nota : nota;
         }
       }
       try {
         if (pl.acao === 'igual') { c0.iguais++; continue; }
-        if (pl.acao === 'bloqueado') { c0.bloqueados++; descartar(t.sql, 'nao importado: ' + pl.motivo); continue; }
+        if (pl.acao === 'bloqueado') { c0.bloqueados++; descartar(t.sql, 'não importado: ' + pl.motivo); continue; }
         if (pl.acao === 'inserir') { db.exec({ sql: ins, bind: rr }); c0.inseridos++; continue; }
         if (pl.tipo === 'ficha') { db.exec({ sql: ins, bind: rr }); c0.inseridos++; continue; } // ficha renumerada (a descartada ja saiu acima)
         if (pl.tipo === 'nome' && decisoes[pl.id] === 'novo') { // usuario: nome parecido, mas e OUTRO cadastro
           db.exec({ sql: ins, bind: rr }); c0.inseridos++;
-          eventos.push({ op: 'Importacao - importado como cadastro diferente', ent: ENTIDADE[t.sql] || 'Sistema', id: String(rr[0]), antes: 'nome parecido com "' + rotuloDe(comoObjeto(cols, db.selectArrays('SELECT ' + lista + ' FROM ' + t.sql + ' WHERE ' + pk.map((c) => c + '=?').join(' AND '), JSON.parse(pl.chaveApp))[0] || [])) + '" ja existente', depois: 'cadastro novo, com o nome da planilha', motivo: 'Escolha do usuario na importacao de "' + arquivo + '"' });
+          eventos.push({ op: 'Importacao - importado como cadastro diferente', ent: ENTIDADE[t.sql] || 'Sistema', id: String(rr[0]), antes: 'nome parecido com "' + rotuloDe(comoObjeto(cols, db.selectArrays('SELECT ' + lista + ' FROM ' + t.sql + ' WHERE ' + pk.map((c) => c + '=?').join(' AND '), JSON.parse(pl.chaveApp))[0] || [])) + '" já existente', depois: 'cadastro novo, com o nome da planilha', motivo: 'Escolha do usuário na importação de "' + arquivo + '"' });
           continue;
         }
         if ((decisoes[pl.id] || 'app') !== 'planilha') { c0.mantidos++; continue; }
@@ -367,7 +368,7 @@ function mesclar(decisoes, parcial, arquivo, usuario) {
         db.exec({ sql: upd, bind: naoPk.map((c) => rr[cols.indexOf(c)]).concat(chaveApp) }); c0.atualizados++;
         if (antesApp) { // auditoria: o que mudou por escolha do usuario
           const dif = cols.map((c, j) => ({ c, a: antesApp[j], n: rr[j] })).filter((x) => !pk.includes(x.c) && !NAO_CONTA.includes(x.c) && !mesmo(x.a, x.n));
-          eventos.push({ op: 'Importacao - registro atualizado', ent: ENTIDADE[t.sql] || 'Sistema', id: String(chaveApp[0]), antes: dif.map((x) => x.c + '=' + (x.a === null ? 'vazio' : x.a)).join('; '), depois: dif.map((x) => x.c + '=' + (x.n === null ? 'vazio' : x.n)).join('; '), motivo: 'Escolha do usuario (usar a planilha) na importacao de "' + arquivo + '"' });
+          eventos.push({ op: 'Importacao - registro atualizado', ent: ENTIDADE[t.sql] || 'Sistema', id: String(chaveApp[0]), antes: dif.map((x) => x.c + '=' + (x.a === null ? 'vazio' : x.a)).join('; '), depois: dif.map((x) => x.c + '=' + (x.n === null ? 'vazio' : x.n)).join('; '), motivo: 'Escolha do usuário (usar a planilha) na importação de "' + arquivo + '"' });
         }
       } catch (e) {
         const m = msgSql(e);
@@ -388,7 +389,7 @@ function mesclar(decisoes, parcial, arquivo, usuario) {
       if (!fk.length) break;
       for (const f of fk) {
         const chaveV = db.selectValue('SELECT * FROM "' + f[0] + '" WHERE rowid = ?', [f[1]]);
-        const msg = 'chave "' + chaveV + '": aponta para um registro que nao existe em ' + f[2];
+        const msg = 'chave "' + chaveV + '": aponta para um registro que não existe em ' + f[2];
         if (parcial) {
           if (!vistos.has(f[0] + '|' + f[1])) { // I2: conta o que sai junto (dependentes) e quais produtos com movimento de estoque caem
             vistos.add(f[0] + '|' + f[1]); cascata[f[0]] = (cascata[f[0]] || 0) + 1;
@@ -409,15 +410,15 @@ function mesclar(decisoes, parcial, arquivo, usuario) {
       eventos.unshift({
         op: f.acao === 'renumerar' ? 'Importacao - ficha renumerada' : 'Importacao - ficha descartada', ent: 'Aplicacao', id: f.id,
         antes: 'ficha ' + pad4(f.de) + ' (arquivo "' + arquivo + '")',
-        depois: f.acao === 'renumerar' ? 'ficha ' + pad4(f.para) + ' (registro na observacao da ficha)' : 'nao importada; tambem nao entraram os registros que dependiam dela: ' + (resumoDep() || 'nenhum'),
+        depois: f.acao === 'renumerar' ? 'ficha ' + pad4(f.para) + ' (registro na observação da ficha)' : 'não importada; também não entraram os registros que dependiam dela: ' + (resumoDep() || 'nenhum'),
         motivo: MOTIVO_F
       });
     }
     const tot = (k) => contagem.reduce((s, c) => s + c[k], 0);
-    eventos.push({ op: 'Importacao', ent: 'Sistema', id: null, antes: null, motivo: 'Atualizacao (juntar) com a planilha "' + arquivo + '"',
+    eventos.push({ op: 'Importacao', ent: 'Sistema', id: null, antes: null, motivo: 'Atualização (juntar) com a planilha "' + arquivo + '"',
       depois: tot('inseridos') + ' inserido(s), ' + tot('atualizados') + ' atualizado(s) pela planilha, ' + tot('mantidos') + ' mantido(s) do app, ' + tot('iguais') + ' igual(is); '
         + fichas.filter((f) => f.acao === 'renumerar').length + ' ficha(s) renumerada(s), ' + fichas.filter((f) => f.acao === 'descartar').length + ' ficha(s) descartada(s); '
-        + descartes.length + ' registro(s) descartado(s) por inconsistencia' });
+        + descartes.length + ' registro(s) descartado(s) por inconsistência' });
     eventos.push(...eventosCorrecoes(corrigidosTmp, arquivo));
     for (const ev of eventos) registrarAuditoria(ev.op, ev.ent, ev.id, ev.antes, ev.depois, ev.motivo, usuario);
   }
@@ -429,7 +430,7 @@ function eventosCorrecoes(lista, arquivo) {
     op: c.diferente ? 'Importacao - nome parecido importado como diferente' : 'Importacao - valor corrigido', ent: ENTIDADE[c.tabela] || 'Sistema', id: c.id === null || c.id === undefined ? null : String(c.id),
     antes: c.diferente ? c.col + '="' + c.antes + '" (parecido com o da linha ' + c.parecido + ')' : c.col + '=' + (c.antes === null ? 'vazio' : c.antes) + ' (linha ' + c.linha + ' do Excel)',
     depois: c.diferente ? 'importado como cadastro diferente' : c.col + '=' + (c.depois === null ? 'vazio' : c.depois),
-    motivo: 'Correcao feita pelo usuario na tela de importacao de "' + arquivo + '" (a planilha original nao foi alterada)'
+    motivo: 'Correção feita pelo usuário na tela de importação de "' + arquivo + '" (a planilha original não foi alterada)'
   }));
 }
 function registrarAuditoria(operacao, entidade, idRegistro, antes, depois, motivo, usuario) {
@@ -447,7 +448,7 @@ const acoes = {
     for (const t of esquema.tabelas) {
       const d = dados[t.tabela], esp = t.colunas.map((c) => c.coluna);
       if (!d || d.cab.length !== esp.length || esp.some((c, i) => d.cab[i] !== c)) {
-        return { sucesso: false, erros: [{ tabela: t.tabela, linha: null, msg: 'tabela ausente ou colunas diferentes do esquema atual (planilha de outra versao)', tipo: 'cabecalho' }] };
+        return { sucesso: false, erros: [{ tabela: t.tabela, linha: null, msg: 'tabela ausente ou colunas diferentes do esquema atual (planilha de outra versão)', tipo: 'cabecalho' }] };
       }
     }
     return Object.assign({ sucesso: true }, comparar(dados, esquema, sql, correcoes));
@@ -456,7 +457,7 @@ const acoes = {
   // simular=true: faz tudo, conta o que seria descartado e DESFAZ (nada e gravado; a planilha continua carregada).
   // Produto com movimento de estoque que cairia so passa com confirmaProdutos=true (I2).
   mesclar: async ({ decisoes, parcial, arquivo, usuario, simular, confirmaProdutos }) => {
-    if (!tmp || !plano) throw new Error('A planilha nao esta mais carregada. Escolha o arquivo de novo.');
+    if (!tmp || !plano) throw new Error('A planilha não está mais carregada. Escolha o arquivo de novo.');
     const antes = exportar();
     let r;
     try {
@@ -465,7 +466,7 @@ const acoes = {
       if (simular) { db.exec('ROLLBACK'); return { sucesso: true, simulacao: true, erros: [], descartes: r.descartes, cascata: r.cascata, produtosComMov: r.produtosComMov }; }
       if (r.produtosComMov.length && !confirmaProdutos) {
         db.exec('ROLLBACK');
-        return { sucesso: false, erros: [{ tabela: 'produtos', linha: null, tipo: 'confirmacao', msg: 'recusado: ' + r.produtosComMov.length + ' produto(s) com movimento de estoque cairiam e precisam de confirmacao explicita' }] };
+        return { sucesso: false, erros: [{ tabela: 'produtos', linha: null, tipo: 'confirmacao', msg: 'recusado: ' + r.produtosComMov.length + ' produto(s) com movimento de estoque cairiam e precisam de confirmação explícita' }] };
       }
       db.exec('COMMIT');
     } catch (e) {
@@ -476,6 +477,14 @@ const acoes = {
     tmp.close(); tmp = null; plano = null;
     return { sucesso: true, erros: [], descartes: r.descartes, contagem: r.contagem, saldos: r.saldos, fichas: r.fichas, tabelas: listaTabelas() };
   },
+  // 3) ESCRITA (fase 0): roda UM comando (JSON puro, ver regras.js) numa transacao tudo-ou-nada, com auditoria e idempotente
+  // por idComando. Nao roda enquanto ha uma planilha esperando decisao (evita misturar as duas gravacoes).
+  executar: async ({ comando, usuario }) => {
+    if (tmp) throw new Error('Há uma comparação de planilha em andamento. Conclua ou cancele antes de gravar.');
+    return executarComando(db, comando, { usuario });
+  },
+  // Consulta de conferencia das safras Abertas (soma das partes = 100% e = area); ids opcionais
+  conferirSafras: async ({ ids }) => conferirSafras(db, ids),
   cancelarComparacao: async () => { if (tmp) tmp.close(); tmp = null; plano = null; return true; },
   tabelas: async () => listaTabelas(),
   ler: async ({ tabela, limite, desloc, ordem }) => {
@@ -488,7 +497,7 @@ const acoes = {
   exportar: async () => { const bytes = exportar(); return { bytes, transfer: [bytes.buffer] }; },
   importar: async ({ bytes }) => {
     const cab = new TextDecoder().decode(new Uint8Array(bytes).slice(0, 15));
-    if (cab !== 'SQLite format 3') throw new Error('Este arquivo nao e um banco SQLite.');
+    if (cab !== 'SQLite format 3') throw new Error('Este arquivo não é um banco SQLite.');
     await substituir(bytes, exigirEsquema);
     return listaTabelas();
   },
@@ -505,12 +514,12 @@ const acoes = {
     // 1) cabecalhos
     for (const t of esquema.tabelas) {
       const d = dados[t.tabela];
-      if (!d) { erro(t.tabela, null, 'tabela ausente no arquivo (versao antiga ou arquivo errado)', 'cabecalho'); continue; }
+      if (!d) { erro(t.tabela, null, 'tabela ausente no arquivo (versão antiga ou arquivo errado)', 'cabecalho'); continue; }
       const esp = t.colunas.map((c) => c.coluna);
       const dif = esp.findIndex((c, i) => d.cab[i] !== c);
       if (d.cab.length !== esp.length || dif >= 0) {
         erro(t.tabela, null, 'colunas diferentes do esquema atual (' + d.cab.length + ' no arquivo, ' + esp.length + ' esperadas)'
-          + (dif >= 0 ? '; primeira diferenca na coluna ' + (dif + 1) + ': arquivo "' + d.cab[dif] + '", esperado "' + esp[dif] + '"' : ''), 'cabecalho');
+          + (dif >= 0 ? '; primeira diferença na coluna ' + (dif + 1) + ': arquivo "' + d.cab[dif] + '", esperado "' + esp[dif] + '"' : ''), 'cabecalho');
       }
     }
     if (erros.length) return { sucesso: false, erros, tabelas: null };
@@ -554,7 +563,7 @@ const acoes = {
           if (!fk.length) break;
           for (const f of fk) {
             const chave = db.selectValue('SELECT * FROM "' + f[0] + '" WHERE rowid = ?', [f[1]]);
-            const msg = 'aponta para um registro que nao existe em ' + f[2];
+            const msg = 'aponta para um registro que não existe em ' + f[2];
             if (parcial && !vistos.has(f[0] + '|' + f[1])) { // I2: conta os dependentes que saem junto e os produtos com movimento que caem
               vistos.add(f[0] + '|' + f[1]); cascata[f[0]] = (cascata[f[0]] || 0) + 1;
               if (f[0] === 'mov_estoque' && f[2] === 'produtos') { const idp = db.selectValue('SELECT id_produto FROM mov_estoque WHERE rowid = ?', [f[1]]); prodMov.set(idp, (prodMov.get(idp) || 0) + 1); }
@@ -570,7 +579,7 @@ const acoes = {
       if (simular) { db.exec('ROLLBACK'); await restaurar(); return { sucesso: true, simulacao: true, erros: [], descartes, cascata, produtosComMov, avisos: ctx.avisos, tabelas: null }; }
       if (produtosComMov.length && !confirmaProdutos) {
         db.exec('ROLLBACK'); await restaurar();
-        return { sucesso: false, erros: [{ tabela: 'produtos', linha: null, tipo: 'confirmacao', msg: 'recusado: ' + produtosComMov.length + ' produto(s) com movimento de estoque cairiam e precisam de confirmacao explicita' }], tabelas: null };
+        return { sucesso: false, erros: [{ tabela: 'produtos', linha: null, tipo: 'confirmacao', msg: 'recusado: ' + produtosComMov.length + ' produto(s) com movimento de estoque cairiam e precisam de confirmação explícita' }], tabelas: null };
       }
       db.exec('COMMIT');
     } catch (e) {
@@ -581,7 +590,7 @@ const acoes = {
     const lt = listaTabelas();
     for (const ev of eventosCorrecoes(ctxCorrigidos, arquivo || 'planilha')) registrarAuditoria(ev.op, ev.ent, ev.id, ev.antes, ev.depois, ev.motivo, usuario);
     registrarAuditoria('Importacao', 'Sistema', null, null, lt.reduce((s, t) => s + t.linhas, 0) + ' linhas; ' + descartes.length + ' descartada(s)',
-      'Substituicao do banco pela planilha "' + (arquivo || 'planilha') + '"', usuario);
+      'Substituição do banco pela planilha "' + (arquivo || 'planilha') + '"', usuario);
     return { sucesso: true, erros: [], descartes, avisos: avisosX, tabelas: listaTabelas() };
   },
   vazio: async ({ sql }) => {

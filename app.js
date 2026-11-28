@@ -1,8 +1,8 @@
-// Prototipo: prova tres coisas no iPhone e no PC
+// Prototipo: prova tres coisas no iPhone e no PC (textos com acento desde a 0.0.9, P-32; padrao de tela em tela.js, D-059)
 // 1) login Google  2) ler/gravar arquivo numa pasta do Google Drive
 // 3) banco SQLite local no aparelho, com envio e recebimento via Drive.
 (function () {
-  const VERSAO_APP = '0.0.7'; // mudar junto com index.html, config.js e sw.js
+  const VERSAO_APP = '0.0.10'; // mudar junto com index.html, config.js e sw.js
   const cfg = window.APP_CONFIG;
   const $ = (id) => document.getElementById(id);
 
@@ -14,10 +14,10 @@
     try { const ks = await caches.keys(); cache = ks.length ? ks.sort().slice(-1)[0] : 'sem cache'; } catch (e) { /* sem cache */ }
     const todas = [tela, conf, VERSAO_APP, cache];
     const iguais = todas.every((v) => v === VERSAO_APP);
-    $('versao').textContent = 'Versao ' + VERSAO_APP + ' (tela ' + tela + ' | config ' + conf + ' | logica ' + VERSAO_APP + ' | offline ' + cache + ')'
-      + (iguais ? '' : ' - ATENCAO: arquivos de versoes diferentes; suba todos e use Ctrl+F5');
+    $('versao').textContent = 'Versão ' + VERSAO_APP + ' (tela ' + tela + ' | config ' + conf + ' | lógica ' + VERSAO_APP + ' | offline ' + cache + ')'
+      + (iguais ? '' : ' - ATENÇÃO: arquivos de versões diferentes; suba todos e use Ctrl+F5');
     $('versao').style.color = iguais ? '' : 'var(--err)';
-    document.title = 'Gestao Agricola ' + VERSAO_APP;
+    document.title = 'Gestão Agrícola ' + VERSAO_APP;
   }
   const logEl = $('log');
   let tAviso = null;
@@ -39,16 +39,16 @@
     try { await fn(); } catch (e) { falha(e); }
     finally { btn.textContent = antes; btn.disabled = estavaOff; if (btn.id.indexOf('Banco') > 0 || btn.id.indexOf('Texto') > 0) atualizarConta($('conta').textContent); }
   }
-  const falha = (e) => log('ERRO: ' + (e && e.message || e), 'erro');
+  const falha = (e) => log('ERRO: ' + Tela.erroSimples(e), 'erro'); // erro tecnico vira portugues simples (tela.js)
 
   // ---------- Aparelho ----------
   async function mostrarAparelho() {
     const standalone = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
-    $('instalado').textContent = standalone ? 'sim (aberto como app)' : 'nao (aberto no navegador)';
-    $('https').textContent = window.isSecureContext ? 'sim' : 'NAO (o app nao funciona sem HTTPS)';
+    $('instalado').textContent = standalone ? 'sim (aberto como app)' : 'não (aberto no navegador)';
+    $('https').textContent = window.isSecureContext ? 'sim' : 'NÃO (o app não funciona sem HTTPS)';
     try {
       const persistente = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : null;
-      $('persistente').textContent = persistente === null ? 'indisponivel' : (persistente ? 'sim' : 'nao');
+      $('persistente').textContent = persistente === null ? 'indisponível' : (persistente ? 'sim' : 'não');
       if (navigator.storage && navigator.storage.estimate) {
         const e = await navigator.storage.estimate();
         $('espaco').textContent = Math.round((e.usage || 0) / 1024) + ' KB usados de ' + Math.round((e.quota || 0) / 1048576) + ' MB';
@@ -86,14 +86,14 @@
 
   function conectado() { return !!acesso && Date.now() < validoAte; }
   function atualizarConta(rotulo) {
-    $('conta').textContent = conectado() ? (rotulo || 'conectado') : 'nao entrou';
+    $('conta').textContent = conectado() ? (rotulo || 'conectado') : 'não entrou';
     ['btnTextoGravar', 'btnTextoLer', 'btnBancoEnviar', 'btnBancoReceber'].forEach((id) => { $(id).disabled = !conectado(); });
     $('btnEntrar').hidden = conectado(); $('btnSair').hidden = !conectado();
   }
 
   function criarCliente() {
     if (cliente) return cliente;
-    if (typeof google === 'undefined' || !google.accounts) throw new Error('Nao consegui carregar o login do Google (sem internet?).');
+    if (typeof google === 'undefined' || !google.accounts) throw new Error('Não consegui carregar o login do Google (sem internet?).');
     cliente = google.accounts.oauth2.initTokenClient({
       client_id: cfg.CLIENT_ID,
       scope: cfg.SCOPES,
@@ -105,7 +105,7 @@
       },
       error_callback: (e) => {
         const p = pedidoPendente; pedidoPendente = null;
-        if (p) p.rej(new Error('Login nao concluido (' + (e && e.type || 'erro') + ')'));
+        if (p) p.rej(new Error('Login não concluído (' + (e && e.type || 'erro') + ')'));
       }
     });
     return cliente;
@@ -186,7 +186,7 @@
   async function receber(nome) {
     const pai = await pasta();
     const ex = await achar(nome, pai);
-    if (!ex) throw new Error('Arquivo ' + nome + ' ainda nao existe no Drive.');
+    if (!ex) throw new Error('Arquivo ' + nome + ' ainda não existe no Drive.');
     return drive(API + '/' + ex.id + '?alt=media');
   }
 
@@ -222,6 +222,8 @@
     });
     const preferida = lista.find((t) => t.nome === anterior) || lista.find((t) => t.linhas > 0) || lista[0];
     if (preferida) { sel.value = preferida.nome; mostrarLinhas(preferida.nome); } else { $('grade').textContent = '(banco sem tabelas)'; }
+    carregarFichas(); // o banco mudou: a lista de fichas tambem
+    if (window.TelaCadastros) window.TelaCadastros.carregarAreas(); // e a de areas (fase A1, tela_cadastros.js)
   }
   async function mostrarLinhas(nome) {
     tabelaAtual = nome;
@@ -255,9 +257,9 @@
       mostrarTabelas(await chamar('tabelas'));
       log('Banco local aberto.', 'ok');
     } catch (e) {
-      $('sqlite').textContent = 'nao abriu';
+      $('sqlite').textContent = 'não abriu';
       if (/Access Handle|NoModificationAllowed|locked/i.test(String(e && e.message))) {
-        falha('O banco ja esta aberto em outra aba ou janela deste app. Feche as outras (inclusive o app da tela inicial) e recarregue.');
+        falha('O banco já está aberto em outra aba ou janela deste app. Feche as outras (inclusive o app da tela inicial) e recarregue.');
       } else falha(e);
     }
   }
@@ -280,14 +282,14 @@
     r.appendChild(ul);
   }
   $('btnImportarXlsm').onclick = () => $('arquivoXlsm').click();
-  let leitura = null; // ultima planilha lida (para "importar o que for valido" sem ler de novo)
+  let leitura = null; // ultima planilha lida (para "importar o que for válido" sem ler de novo)
   // CORRIGIR em vez de so recusar: cada problema ganha um campo (ou lista) para o valor certo; a planilha original nao muda.
   // As correcoes ficam em leitura.correcoes (chave "tabela|linha|coluna") e vao junto na proxima tentativa; o worker as grava na auditoria.
   function blocoCorrecoes(lista, aoAplicar) {
     const itens = lista.filter((x) => x.ts && x.col);
     if (!itens.length) return;
     const box = el('div', undefined, 'margin:10px 0;border-top:1px solid var(--borda);padding-top:8px');
-    box.appendChild(el('p', 'Corrigir aqui (a planilha original nao muda; cada correcao fica na auditoria):', 'margin:0 0 6px;font-weight:600'));
+    box.appendChild(el('p', 'Corrigir aqui (a planilha original não muda; cada correção fica na auditoria):', 'margin:0 0 6px;font-weight:600'));
     const campos = [];
     itens.slice(0, 30).forEach((x) => {
       const card = el('div', undefined, 'border:1px solid var(--borda);border-radius:10px;padding:8px;margin:0 0 6px;font-size:13px');
@@ -303,14 +305,14 @@
       if (x.kind === 'parecido') {
         const lab = el('label', undefined, 'display:block;margin-top:6px');
         dif = document.createElement('input'); dif.type = 'checkbox'; dif.style.marginRight = '6px';
-        lab.appendChild(dif); lab.appendChild(document.createTextNode('Sao produtos DIFERENTES: importar tambem este, com o nome como esta'));
+        lab.appendChild(dif); lab.appendChild(document.createTextNode('São produtos DIFERENTES: importar também este, com o nome como está'));
         card.appendChild(lab);
       }
       campos.push({ x, ent, dif });
       box.appendChild(card);
     });
     if (itens.length > 30) box.appendChild(el('p', '... e mais ' + (itens.length - 30) + ' problema(s); corrija estes e tente de novo.', 'color:var(--mut);font-size:13px'));
-    const b = el('button', 'Aplicar correcoes e tentar de novo');
+    const b = el('button', 'Aplicar correções e tentar de novo');
     b.onclick = () => tarefa(b, 'Conferindo...', async () => {
       leitura.correcoes = leitura.correcoes || {};
       let n = 0;
@@ -319,38 +321,38 @@
         if (dif && dif.checked) { leitura.correcoes[k] = { diferente: true }; n++; }
         else if (v !== '' && v !== antes) { leitura.correcoes[k] = { valor: v }; n++; }
       });
-      if (!n) { log('Nenhuma correcao digitada.', 'erro'); return; }
+      if (!n) { log('Nenhuma correção digitada.', 'erro'); return; }
       await aoAplicar();
     });
     box.appendChild(b);
     $('relatorio').appendChild(box);
   }
-  const avisosTxt = (av) => (av && av.length ? ['AVISO: ' + av.length + ' numero(s) digitado(s) com virgula foram convertidos:'].concat(av.map((x) => x.tabela + ' (linha ' + x.linha + ' do Excel), ' + x.msg)) : []);
+  const avisosTxt = (av) => (av && av.length ? ['AVISO: ' + av.length + ' número(s) digitado(s) com vírgula foram convertidos:'].concat(av.map((x) => x.tabela + ' (linha ' + x.linha + ' do Excel), ' + x.msg)) : []);
   // Simulacao do descarte (I2): mostra o que sairia (direto + dependentes + produtos com movimento) ANTES de gravar
   function mostrarSimulacao(r, aplicar) {
     const dep = (x) => /aponta para um registro/.test(x.msg);
     const diretos = r.descartes.filter((x) => !dep(x));
     const nDep = Object.values(r.cascata || {}).reduce((s, n) => s + n, 0);
-    const txt = ['SIMULACAO: nada foi gravado ainda. Se voce confirmar, sai o seguinte:',
-      diretos.length + ' registro(s) com problema (nao entram):']
+    const txt = ['SIMULAÇÃO: nada foi gravado ainda. Se você confirmar, sai o seguinte:',
+      diretos.length + ' registro(s) com problema (não entram):']
       .concat(diretos.slice(0, 15).map((x) => x.tabela + (x.linha ? ' (linha ' + x.linha + ' do Excel)' : '') + ': ' + x.msg));
     if (diretos.length > 15) txt.push('... e mais ' + (diretos.length - 15));
-    txt.push(nDep + ' linha(s) dependente(s) tambem saem' + (nDep ? ': ' + Object.entries(r.cascata).map(([k, n]) => (NOME_TABELA[k] || k) + ' ' + n).join(', ') : '.'));
+    txt.push(nDep + ' linha(s) dependente(s) também saem' + (nDep ? ': ' + Object.entries(r.cascata).map(([k, n]) => (NOME_TABELA[k] || k) + ' ' + n).join(', ') : '.'));
     if (r.produtosComMov.length) {
-      txt.push('ATENCAO: ' + r.produtosComMov.length + ' produto(s) com movimento de estoque seriam descartados, com o historico deles:');
+      txt.push('ATENÇÃO: ' + r.produtosComMov.length + ' produto(s) com movimento de estoque seriam descartados, com o histórico deles:');
       r.produtosComMov.forEach((p) => txt.push((p.nome || p.id) + ': ' + p.movimentos + ' movimento(s) de estoque'));
     }
     avisosTxt(r.avisos).forEach((x) => txt.push(x));
     mostrarRelatorio(txt, r.produtosComMov.length ? 'erro' : undefined);
-    const b = el('button', r.produtosComMov.length ? 'Confirmar: descartar tambem os produtos com movimento' : 'Confirmar e continuar');
+    const b = el('button', r.produtosComMov.length ? 'Confirmar: descartar também os produtos com movimento' : 'Confirmar e continuar');
     b.onclick = () => tarefa(b, 'Gravando...', async () => {
       const aviso = r.produtosComMov.length
-        ? 'Os produtos com movimento de estoque serao APAGADOS junto com o historico deles (' + r.produtosComMov.map((p) => p.nome || p.id).join(', ') + '). Tem certeza?'
-        : 'Os registros acima serao DESCARTADOS e o banco do aparelho sera alterado. Continuar?';
+        ? 'Os produtos com movimento de estoque serão APAGADOS junto com o histórico deles (' + r.produtosComMov.map((p) => p.nome || p.id).join(', ') + '). Tem certeza?'
+        : 'Os registros acima serão DESCARTADOS e o banco do aparelho será alterado. Continuar?';
       if (!confirm(aviso)) return;
       await aplicar(r.produtosComMov.length > 0);
     });
-    const c = el('button', 'Cancelar (nao altera nada)'); c.className = 'sec'; c.onclick = () => chamar('cancelarComparacao').then(() => mostrarRelatorio(['Cancelado. Nada foi alterado.']));
+    const c = el('button', 'Cancelar (não altera nada)'); c.className = 'sec'; c.onclick = () => chamar('cancelarComparacao').then(() => mostrarRelatorio(['Cancelado. Nada foi alterado.']));
     $('relatorio').appendChild(b); $('relatorio').appendChild(c);
   }
   async function importarXlsm(parcial, opc) {
@@ -365,11 +367,11 @@
       blocoCorrecoes(r.erros, () => importarXlsm(false));
       if (r.erros.every((x) => x.tipo === 'dado')) {
         const b = document.createElement('button'); b.className = 'sec';
-        b.textContent = 'Importar so o que for valido (mostra antes o que seria descartado)';
+        b.textContent = 'Importar só o que for válido (mostra antes o que seria descartado)';
         b.onclick = () => tarefa(b, 'Simulando...', () => importarXlsm(true, { simular: true }));
         $('relatorio').appendChild(b);
       }
-      log('Importacao recusada: ' + r.erros.length + ' problema(s). Veja o relatorio.', 'erro');
+      log('Importação recusada: ' + r.erros.length + ' problema(s). Veja o relatório.', 'erro');
       return;
     }
     mostrarTabelas(r.tabelas);
@@ -377,7 +379,7 @@
     const txt = ['Importado de "' + leitura.nome + '": ' + com.reduce((s, t) => s + t.linhas, 0) + ' linhas em ' + com.length + ' tabelas.']
       .concat(com.map((t) => t.nome + ': ' + t.linhas));
     if (r.descartes && r.descartes.length) {
-      txt.push('DESCARTADOS (' + r.descartes.length + '), nao entraram no banco:');
+      txt.push('DESCARTADOS (' + r.descartes.length + '), não entraram no banco:');
       r.descartes.forEach((x) => txt.push(x.tabela + (x.linha ? ' (linha ' + x.linha + ' do Excel)' : '') + ': ' + x.msg));
     }
     avisosTxt(r.avisos).forEach((x) => txt.push(x));
@@ -391,10 +393,66 @@
     const nome = 'fazenda_backup_' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + '.db';
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' })); a.download = nome;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    log('Copia de seguranca baixada: ' + nome, 'ok');
+    log('Cópia de segurança baixada: ' + nome, 'ok');
     return nome;
   }
-  const NOME_TABELA = { areas: 'Area', produtos: 'Produto', sementes: 'Semente', safras: 'Safra', safra_cultivos: 'Parte da safra', grupos: 'Grupo', principios_ativos: 'Principio ativo', medidas: 'Medida', cultivares: 'Cultivar', codigos: 'Codigo', aplicacoes: 'Ficha', mov_estoque: 'Movimento de estoque' };
+  // Grava uma SEQUENCIA de comandos (regras.js): antes baixa UMA copia de seguranca (so se pedir; padrao sim) e para no primeiro que falhar.
+  // Cada comando e tudo-ou-nada no worker; comando repetido (mesmo idComando) e ignorado. Devolve {resultados, parouEm}.
+  async function executarComandos(comandos, opc) {
+    const o = Object.assign({ backup: true }, opc);
+    if (o.backup && comandos.length) await baixarBackup();
+    const resultados = [];
+    for (let i = 0; i < comandos.length; i++) {
+      const r = await chamar('executar', { comando: comandos[i], usuario: o.usuario || rotuloConta || 'app web' });
+      resultados.push(r);
+      if (!r.sucesso) { log('Comando "' + comandos[i].tipo + '" recusado: ' + r.erros.join('; '), 'erro'); return { resultados, parouEm: i }; }
+    }
+    return { resultados, parouEm: null };
+  }
+  window.appFazenda = { chamar, executarComandos, baixarBackup }; // usado por tela.js (Tela.gravar), pelos testes e pelas fases seguintes
+
+  // ---------- Primeira tela no PADRAO (tela.js, D-059): observacao de uma ficha ----------
+  // Modelo para as fases A-E: lista com busca (nomes, nunca IDs) -> formulario -> confirmar -> gravar por comando -> mensagem final.
+  async function lerTudo(tabela) {
+    const r = await chamar('ler', { tabela, limite: 100000 });
+    return r.linhas.map((l) => Object.fromEntries(r.colunas.map((c, i) => [c, l[i]])));
+  }
+  async function carregarFichas() {
+    const alvo = $('telaFichas');
+    if (!alvo || !worker) return;
+    let fichas, areas;
+    try { fichas = await lerTudo('aplicacoes'); areas = await lerTudo('aplicacao_areas'); }
+    catch (e) { // banco sem as tabelas = ainda nao abriu/criou/importou; outro erro aparece de verdade (A4 da revisao)
+      alvo.innerHTML = '';
+      const semBanco = /Tabela desconhecida/.test(String(e && e.message));
+      alvo.appendChild(el('p', semBanco ? 'Abra, crie ou importe um banco primeiro.' : 'Não consegui ler as fichas: ' + Tela.erroSimples(e), semBanco ? 'color:var(--mut);margin:0' : 'color:var(--err);margin:0'));
+      return;
+    }
+    const areasDa = {};
+    areas.forEach((a) => { (areasDa[a.id_aplicacao] = areasDa[a.id_aplicacao] || []).push(a.area_nome + (a.parte ? ' (' + a.parte + ')' : '')); });
+    const itens = fichas.sort((a, b) => b.numero - a.numero).map((f) => ({
+      ficha: f, areas: (areasDa[f.id_aplicacao] || []).join(', ') || 'sem área',
+      titulo: 'Ficha ' + Tela.numeroFicha(f.numero) + ' - ' + ((areasDa[f.id_aplicacao] || []).join(', ') || 'sem área'),
+      detalhe: 'Safra ' + f.safra + ' | ' + f.situacao + (f.observacoes ? ' | obs.: ' + String(f.observacoes).slice(0, 60) : '')
+    }));
+    Tela.lista({ alvo, itens, rotuloBusca: 'Buscar ficha por número, área, safra...', vazio: 'Nenhuma ficha neste banco ainda.', aoEscolher: editarObservacao });
+  }
+  function editarObservacao(it) {
+    const f = it.ficha, nome = 'ficha ' + Tela.numeroFicha(f.numero) + ' (' + it.areas + ')';
+    Tela.formulario({
+      alvo: $('telaFichas'), titulo: 'Observação da ' + nome,
+      campos: [{ nome: 'observacoes', rotulo: 'Observações gerais', tipo: 'texto longo', max: 2000, ajuda: 'Antes de gravar, o app baixa uma cópia de segurança do banco.' }],
+      valores: { observacoes: f.observacoes || '' },
+      gravar: async (v) => {
+        const r = await Tela.gravar([{ tipo: 'ajustar_observacao_ficha', dados: { id_aplicacao: f.id_aplicacao, observacoes: v.observacoes } }]);
+        if (r.resultados[0].repetido) return 'Isto já estava gravado; nada mudou.';
+        log('Gravado: observação da ' + nome + '.', 'ok');
+        return ['Gravado: observação da ' + nome + '.', 'Agora: ' + (v.observacoes ? '"' + v.observacoes + '"' : '(vazio)'), 'Fica registrado na auditoria.'];
+      },
+      aoFechar: () => carregarFichas()
+    });
+  }
+  const NOME_TABELA = { areas: 'Área', produtos: 'Produto', sementes: 'Semente', safras: 'Safra', safra_cultivos: 'Parte da safra', grupos: 'Grupo', principios_ativos: 'Princípio ativo', medidas: 'Medida', cultivares: 'Cultivar', codigos: 'Código', aplicacoes: 'Ficha', mov_estoque: 'Movimento de estoque' };
   const el = (tag, txt, css) => { const e = document.createElement(tag); if (txt !== undefined) e.textContent = txt; if (css) e.style.cssText = css; return e; };
 
   // Atualizar: compara a planilha com o banco e pergunta, para cada duplicidade, qual manter
@@ -404,36 +462,36 @@
     const r = await chamar('comparar', { dados: leitura.dados, esquema, sql, correcoes: leitura.correcoes || {} });
     const R = $('relatorio'); R.innerHTML = '';
     if (!r.sucesso) {
-      mostrarRelatorio(['Nada foi alterado. Esta planilha nao serve para atualizar:'].concat(r.erros.map((x) => x.tabela + ': ' + x.msg)), 'erro');
+      mostrarRelatorio(['Nada foi alterado. Esta planilha não serve para atualizar:'].concat(r.erros.map((x) => x.tabela + ': ' + x.msg)), 'erro');
       return;
     }
     const lin = r.resumo.filter((t) => t.novos + t.conflitos + t.bloqueados + t.invalidas > 0);
     const totNovos = r.resumo.reduce((s, t) => s + t.novos, 0), totIguais = r.resumo.reduce((s, t) => s + t.iguais, 0);
-    R.appendChild(el('p', 'Comparacao de "' + leitura.nome + '" com o banco do aparelho: ' + totNovos + ' registro(s) novo(s), ' + totIguais + ' igual(is) (ignorados), ' + r.conflitos.length + ' em duplicidade para voce decidir.', 'margin:0 0 6px;font-weight:600'));
+    R.appendChild(el('p', 'Comparação de "' + leitura.nome + '" com o banco do aparelho: ' + totNovos + ' registro(s) novo(s), ' + totIguais + ' igual(is) (ignorados), ' + r.conflitos.length + ' em duplicidade para você decidir.', 'margin:0 0 6px;font-weight:600'));
     const ul = el('ul', undefined, 'margin:0 0 8px;padding-left:18px;font-size:13px');
     lin.forEach((t) => ul.appendChild(el('li', (NOME_TABELA[t.tabela] || t.tabela) + ': ' + t.novos + ' novo(s)'
-      + (t.conflitos ? ', ' + t.conflitos + ' duplicado(s)' : '') + (t.bloqueados ? ', ' + t.bloqueados + ' bloqueado(s)' : '') + (t.invalidas ? ', ' + t.invalidas + ' invalido(s)' : ''))));
+      + (t.conflitos ? ', ' + t.conflitos + ' duplicado(s)' : '') + (t.bloqueados ? ', ' + t.bloqueados + ' bloqueado(s)' : '') + (t.invalidas ? ', ' + t.invalidas + ' inválido(s)' : ''))));
     if (lin.length) R.appendChild(ul);
-    if (r.bloqueados.length) R.appendChild(el('p', 'Nao serao importados, e o que depende deles tambem nao (valor que deve ser unico ja existe, ex.: numero de ficha repetido): ' + r.bloqueados.slice(0, 5).join('; ') + (r.bloqueados.length > 5 ? '...' : ''), 'color:var(--err);font-size:13px;margin:0 0 8px'));
+    if (r.bloqueados.length) R.appendChild(el('p', 'Não serão importados, e o que depende deles também não (valor que deve ser único já existe, ex.: número de ficha repetido): ' + r.bloqueados.slice(0, 5).join('; ') + (r.bloqueados.length > 5 ? '...' : ''), 'color:var(--err);font-size:13px;margin:0 0 8px'));
     if (r.invalidas.length) {
-      R.appendChild(el('p', r.invalidas.length + ' linha(s) da planilha tem dado invalido e serao ignoradas (a menos que voce corrija abaixo):', 'color:var(--err);font-size:13px;margin:0 0 2px'));
+      R.appendChild(el('p', r.invalidas.length + ' linha(s) da planilha têm dado inválido e serão ignoradas (a menos que você corrija abaixo):', 'color:var(--err);font-size:13px;margin:0 0 2px'));
       blocoCorrecoes(r.invalidas, () => atualizarComPlanilha());
     }
     avisosTxt(r.avisos).forEach((x) => R.appendChild(el('p', x, 'font-size:13px;margin:0 0 2px;color:var(--mut)')));
     const escolhas = {};
     let atualizaOk = () => {};
-    const pad4 = (n) => String(n).padStart(4, '0');
+    const pad4 = Tela.numeroFicha; // R9: ficha 0001
     r.conflitos.forEach((c, n) => {
       const ficha = c.tipo === 'ficha';
       const card = el('div', undefined, 'border:1px solid ' + (ficha ? 'var(--err)' : 'var(--borda)') + ';border-radius:10px;padding:10px;margin:0 0 8px;font-size:13px');
       card.appendChild(el('div', (n + 1) + '. ' + (NOME_TABELA[c.tabela] || c.tabela) + ': ' + c.rotulo, 'font-weight:600'));
-      card.appendChild(el('div', ficha ? 'Numero repetido: o app ja tem uma ficha ' + c.rotuloApp + ' e ela e OUTRA ficha. Decida o que fazer com a ficha da planilha.'
+      card.appendChild(el('div', ficha ? 'Número repetido: o app já tem uma ficha ' + c.rotuloApp + ' e ela é OUTRA ficha. Decida o que fazer com a ficha da planilha.'
         : (c.tipo === 'nome' ? 'Mesmo nome, mas cadastros com IDs diferentes (' + c.rotuloApp + ' no app).' : 'Mesmo ID, com valores diferentes.'), 'color:var(--mut);margin:2px 0 6px'));
       if (ficha) { card.appendChild(el('div', 'No app: ' + c.app.texto, 'margin:2px 0')); card.appendChild(el('div', 'Na planilha: ' + c.nova.texto, 'margin:2px 0 6px')); }
       const grupo = 'dec' + n; escolhas[c.id] = c.sugestao;
       const opcoes = ficha
-        ? [['descartar', 'Descartar', 'a ficha da planilha nao entra, nem o que depende dela (itens, execucoes e movimentos de estoque). Fica registrado na auditoria.'],
-          ['renumerar', 'Renumerar', 'a ficha da planilha entra como n. ' + pad4(c.novoNumero) + '. Fica registrado na propria ficha (observacoes) e na auditoria.']]
+        ? [['descartar', 'Descartar', 'a ficha da planilha não entra, nem o que depende dela (itens, execuções e movimentos de estoque). Fica registrado na auditoria.'],
+          ['renumerar', 'Renumerar', 'a ficha da planilha entra como n. ' + pad4(c.novoNumero) + '. Fica registrado na própria ficha (observações) e na auditoria.']]
         : [['app', 'Manter o do app', c.app.texto], ['planilha', 'Usar o da planilha', c.nova.texto]].concat(c.podeNovo ? [['novo', 'Importar como produto DIFERENTE', 'entra como mais um cadastro, com o nome da planilha (' + c.rotulo + '), ao lado de ' + c.rotuloApp + ' do app']] : []);
       opcoes.forEach(([val, rot, txt]) => {
         const lab = el('label', undefined, 'display:block;margin:4px 0;line-height:1.35');
@@ -445,7 +503,7 @@
       if (c.campos.length) card.appendChild(el('div', 'Campos diferentes: ' + c.campos.map((x) => x.col + ' (app: ' + (x.app === null ? 'vazio' : x.app) + ' / planilha: ' + (x.nova === null ? 'vazio' : x.nova) + ')').join('; ') + (c.totalCampos > c.campos.length ? '...' : ''), 'color:var(--mut);margin-top:4px;word-break:break-word'));
       R.appendChild(card);
     });
-    const fim = (c) => chamar('cancelarComparacao').then(() => { if (c) mostrarRelatorio(['Atualizacao cancelada. Nada foi alterado.']); });
+    const fim = (c) => chamar('cancelarComparacao').then(() => { if (c) mostrarRelatorio(['Atualização cancelada. Nada foi alterado.']); });
     async function aplicar(parcial, opc) {
       opc = opc || {};
       const m = await chamar('mesclar', { decisoes: escolhas, parcial, arquivo: leitura.nome, usuario: rotuloConta || 'app web', simular: !!opc.simular, confirmaProdutos: !!opc.confirmaProdutos });
@@ -453,33 +511,33 @@
       if (!m.sucesso) {
         mostrarRelatorio(['NADA foi alterado; o banco anterior foi mantido. Problemas encontrados:'].concat(m.erros.map((x) => x.tabela + ': ' + x.msg)), 'erro');
         if (m.erros.every((x) => x.tipo === 'dado')) {
-          const b = el('button', 'Atualizar so com o que for valido (mostra antes o que seria descartado)'); b.className = 'sec';
+          const b = el('button', 'Atualizar só com o que for válido (mostra antes o que seria descartado)'); b.className = 'sec';
           b.onclick = () => tarefa(b, 'Simulando...', () => aplicar(true, { simular: true }));
           $('relatorio').appendChild(b);
         }
-        log('Atualizacao recusada: ' + m.erros.length + ' problema(s).', 'erro'); return;
+        log('Atualização recusada: ' + m.erros.length + ' problema(s).', 'erro'); return;
       }
       mostrarTabelas(m.tabelas);
-      const txt = ['Atualizacao concluida com "' + leitura.nome + '".'];
+      const txt = ['Atualização concluída com "' + leitura.nome + '".'];
       m.contagem.filter((c) => c.inseridos + c.atualizados + c.mantidos + c.bloqueados > 0).forEach((c) => txt.push((NOME_TABELA[c.tabela] || c.tabela) + ': ' + c.inseridos + ' inserido(s), ' + c.atualizados + ' atualizado(s) pela planilha, ' + c.mantidos + ' mantido(s) do app'));
       if (m.fichas && m.fichas.length) {
-        txt.push('Fichas com numero repetido (decisao registrada na auditoria):');
-        m.fichas.forEach((f) => txt.push('ficha ' + pad4(f.de) + (f.acao === 'renumerar' ? ' renumerada para ' + pad4(f.para) + ' (nota na observacao da ficha)' : ' descartada, com o que dependia dela')));
+        txt.push('Fichas com número repetido (decisão registrada na auditoria):');
+        m.fichas.forEach((f) => txt.push('ficha ' + pad4(f.de) + (f.acao === 'renumerar' ? ' renumerada para ' + pad4(f.para) + ' (nota na observação da ficha)' : ' descartada, com o que dependia dela')));
       }
       if (m.saldos.length) { txt.push('ESTOQUE recalculado (saldo inicial + movimentos confirmados):'); m.saldos.forEach((s) => txt.push(s)); }
       if (m.descartes.length) { txt.push('DESCARTADOS (' + m.descartes.length + '):'); m.descartes.forEach((x) => txt.push(x.tabela + ': ' + x.msg)); }
       mostrarRelatorio(txt);
       log('Banco atualizado com a planilha "' + leitura.nome + '".', 'ok');
     }
-    const rotuloOk = 'Aplicar atualizacao (' + totNovos + ' novo(s), ' + r.conflitos.length + ' decisao(oes))';
+    const rotuloOk = 'Aplicar atualização (' + totNovos + ' novo(s), ' + r.conflitos.length + ' decisão(ões))';
     const ok = el('button', rotuloOk);
     atualizaOk = () => {
       const falta = r.conflitos.filter((c) => c.tipo === 'ficha' && !escolhas[c.id]).length;
-      ok.disabled = falta > 0; ok.textContent = falta > 0 ? 'Decida ' + falta + ' ficha(s) de numero repetido para continuar' : rotuloOk;
+      ok.disabled = falta > 0; ok.textContent = falta > 0 ? 'Decida ' + falta + ' ficha(s) de número repetido para continuar' : rotuloOk;
     };
     atualizaOk();
     ok.onclick = () => tarefa(ok, 'Atualizando...', () => aplicar(false));
-    const cancela = el('button', 'Cancelar (nao altera nada)'); cancela.className = 'sec'; cancela.onclick = () => fim(true);
+    const cancela = el('button', 'Cancelar (não altera nada)'); cancela.className = 'sec'; cancela.onclick = () => fim(true);
     R.appendChild(ok); R.appendChild(cancela);
   }
 
@@ -493,18 +551,18 @@
       const linhas = tabs.reduce((s, t) => s + t.linhas, 0);
       if (!linhas) { await importarXlsm(false); return; } // banco vazio: nada a decidir
       const R = $('relatorio'); R.innerHTML = '';
-      R.appendChild(el('p', 'O banco deste aparelho ja tem ' + linhas + ' linhas. O que fazer com "' + f.name + '"? (uma copia de seguranca do banco atual sera baixada antes)', 'margin:0 0 6px;font-weight:600'));
-      const atual = el('button', 'Atualizar: juntar com o que ja existe (voce decide as duplicidades)');
+      R.appendChild(el('p', 'O banco deste aparelho já tem ' + linhas + ' linhas. O que fazer com "' + f.name + '"? (uma cópia de segurança do banco atual será baixada antes)', 'margin:0 0 6px;font-weight:600'));
+      const atual = el('button', 'Atualizar: juntar com o que já existe (você decide as duplicidades)');
       atual.onclick = () => tarefa(atual, 'Comparando...', async () => { await baixarBackup(); await atualizarComPlanilha(); });
-      const subst = el('button', 'Substituir: apagar o banco atual e usar so a planilha'); subst.className = 'sec';
-      subst.onclick = () => tarefa(subst, 'Importando...', async () => { if (!confirm('SUBSTITUIR apaga os dados atuais do aparelho (a copia de seguranca sera baixada). Continuar?')) return; await baixarBackup(); await importarXlsm(false); });
-      const canc = el('button', 'Cancelar'); canc.className = 'sec'; canc.onclick = () => mostrarRelatorio(['Importacao cancelada. Nada foi alterado.']);
+      const subst = el('button', 'Substituir: apagar o banco atual e usar só a planilha'); subst.className = 'sec';
+      subst.onclick = () => tarefa(subst, 'Importando...', async () => { if (!confirm('SUBSTITUIR apaga os dados atuais do aparelho (a cópia de segurança será baixada). Continuar?')) return; await baixarBackup(); await importarXlsm(false); });
+      const canc = el('button', 'Cancelar'); canc.className = 'sec'; canc.onclick = () => mostrarRelatorio(['Importação cancelada. Nada foi alterado.']);
       R.appendChild(atual); R.appendChild(subst); R.appendChild(canc);
     });
   };
   // Banco novo: so as tabelas do esquema (esquema.sql, gerado de esquema/colunas.csv)
   $('btnNovoVazio').onclick = () => tarefa($('btnNovoVazio'), 'Criando...', async () => {
-    if (!confirm('Criar um banco VAZIO (so o esquema) SUBSTITUI o banco deste aparelho. Continuar?')) return;
+    if (!confirm('Criar um banco VAZIO (só o esquema) SUBSTITUI o banco deste aparelho. Continuar?')) return;
     const sql = await (await fetch('./esquema.sql', { cache: 'no-store' })).text();
     mostrarTabelas(await chamar('vazio', { sql }));
     log('Banco vazio criado com o esquema.', 'ok');
@@ -523,13 +581,28 @@
 
   // ---------- Offline ----------
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(() => { log('Modo offline preparado.'); setTimeout(mostrarVersao, 1500); }, (e) => log('Offline indisponivel: ' + e.message));
+    navigator.serviceWorker.register('./sw.js').then(() => { log('Modo offline preparado.'); setTimeout(mostrarVersao, 1500); }, (e) => log('Offline indisponível: ' + e.message));
   }
 
   mostrarVersao();
   mostrarAparelho();
-  if (restaurarAcesso()) log('Login anterior ainda vale (ate ' + new Date(validoAte).toLocaleTimeString('pt-BR') + ').', 'ok');
+  if (restaurarAcesso()) log('Login anterior ainda vale (até ' + new Date(validoAte).toLocaleTimeString('pt-BR') + ').', 'ok');
   atualizarConta(rotuloConta);
   if (!configurado()) log('Falta colocar o ID do cliente em config.js (veja LEIA-ME.md, passo 2).', 'erro');
-  iniciarBanco();
+  // Trava de UMA aba/janela (Web Locks): quem chega depois recebe aviso e nao abre o banco (A43). O bloqueio some sozinho ao fechar a aba.
+  function travarUmaAba() {
+    if (!navigator.locks) return Promise.resolve(true); // navegador antigo: fica so a mensagem de erro do banco
+    return new Promise((resolve) => {
+      navigator.locks.request('fazenda-gestao-uma-aba', { ifAvailable: true }, (lock) => {
+        if (!lock) { resolve(false); return undefined; }
+        resolve(true);
+        return new Promise(() => {}); // segura o bloqueio ate a aba fechar
+      });
+    });
+  }
+  travarUmaAba().then((livre) => {
+    if (livre) { iniciarBanco(); return; }
+    $('sqlite').textContent = 'não abriu (outra aba)';
+    falha('O app já está aberto em outra aba ou janela (inclusive o app da tela inicial). Use só uma por vez: feche as outras e recarregue esta.');
+  });
 })();

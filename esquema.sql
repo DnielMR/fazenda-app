@@ -395,4 +395,6 @@ CREATE TABLE glossario ( -- Glossario: termos, explicacoes e onde aparecem como 
 ) STRICT;
 
 CREATE UNIQUE INDEX uq_safra_aberta_por_area ON safras(id_area) WHERE situacao = 'Aberta';
+CREATE UNIQUE INDEX uq_sementes_id_produto ON sementes(id_produto);
+CREATE UNIQUE INDEX uq_safra_cultivos_id_safra_ordem ON safra_cultivos(id_safra,ordem);
 CREATE UNIQUE INDEX uq_safra_rotulo_por_area ON safras(id_area, safra);
